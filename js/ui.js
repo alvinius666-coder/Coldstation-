@@ -6,13 +6,16 @@ import * as A from './actions.js';
 import { kojen } from './tick.js';
 
 const NAMEN = { energie: 'Energie', schrott: 'Schrott', algen: 'Algen' };
+// Jobzeilen: Arbeit, Baustelle, dann Einrichtungen mit Personal.
 const JOBS = {
   schrott: 'Ausschlachten',
   algen: 'Algentanks',
   energie: 'Reaktor',
   bau: 'Baustelle',
-  ...EINRICHTUNG_NAME,
 };
+for (const [key, e] of Object.entries(CONFIG.einrichtungen)) {
+  if (e.personal > 0) JOBS[key] = EINRICHTUNG_NAME[key];
+}
 
 // Wann eine Jobzeile sichtbar ist.
 function jobSichtbar(s, job) {
@@ -30,17 +33,20 @@ function zustand(E) {
   return 'brechen ein';
 }
 
+function bauAnteil(s) {
+  return Math.floor((s.bau.fortschritt / CONFIG.einrichtungen[s.bau.key].arbeit) * 100);
+}
+
 function einrichtungAktion(key) {
   return {
     id: key,
     text: (s) => {
-      if (s.bau?.key !== key) return `${EINRICHTUNG_NAME[key]} bauen`;
-      const anteil = s.bau.fortschritt / CONFIG.einrichtungen[key].arbeit;
-      return `${EINRICHTUNG_NAME[key]}: im Bau, ${Math.floor(anteil * 100)} %`;
+      if (s.bau?.key === key) return `${EINRICHTUNG_NAME[key]}: im Bau, ${bauAnteil(s)} %`;
+      return `${EINRICHTUNG_NAME[key]} ${s.rat.aktiv ? 'vorschlagen' : 'bauen'}`;
     },
     sichtbar: (s) => s.frei[key] && !s.bauten[key],
     kosten: (s) => (s.bau?.key === key ? null : A.einrichtungKosten(key)),
-    gesperrt: (s) => Boolean(s.bau),
+    gesperrt: (s) => Boolean(s.bau) || Boolean(s.rat.vorschlag),
     tun: (s) => A.einrichtungBauen(s, key),
   };
 }
@@ -83,12 +89,15 @@ const AKTIONEN = [
   },
   {
     id: 'koje',
-    text: () => 'Kojen herrichten',
+    text: (s) => (s.rat.aktiv ? 'Kojen vorschlagen' : 'Kojen herrichten'),
     sichtbar: (s) => s.frei.leute,
     kosten: A.kojeKosten,
+    gesperrt: (s) => Boolean(s.rat.vorschlag),
     tun: A.kojeHerrichten,
   },
-  ...Object.keys(CONFIG.einrichtungen).map(einrichtungAktion),
+  ...Object.keys(CONFIG.einrichtungen)
+    .filter((key) => !CONFIG.einrichtungen[key].nurRat)
+    .map(einrichtungAktion),
 ];
 
 const VORRAETE = [
@@ -188,9 +197,22 @@ export function initUI(holeSpiel) {
   regler.min = CONFIG.quote.min;
   regler.max = CONFIG.quote.max;
   regler.step = CONFIG.quote.schritt;
+  // Ohne Rat wirkt der Regler sofort. Mit Rat wird beim Loslassen ein Vorschlag daraus.
   regler.addEventListener('input', () => {
-    A.quoteSetzen(holeSpiel(), Number(regler.value));
-    render(holeSpiel());
+    const s = holeSpiel();
+    if (s.rat.aktiv) {
+      $('quote-wert').textContent = zahl(Number(regler.value), 1);
+      return;
+    }
+    A.quoteSetzen(s, Number(regler.value));
+    render(s);
+  });
+  regler.addEventListener('change', () => {
+    const s = holeSpiel();
+    if (!s.rat.aktiv) return;
+    A.quoteSetzen(s, Number(regler.value));
+    regler.blur();
+    render(s);
   });
 }
 
@@ -203,6 +225,7 @@ export function zuruecksetzen() {
   $('ertrag').hidden = true;
   $('leute').hidden = true;
   $('schicht').hidden = true;
+  $('rat').hidden = true;
 }
 
 export function render(s) {
@@ -255,10 +278,15 @@ export function render(s) {
   zeige($('schicht'), s.frei.leute);
   if (s.frei.leute) {
     const regler = $('quote');
-    if (document.activeElement !== regler) regler.value = s.kolonie.quote;
-    $('quote-wert').textContent = zahl(s.kolonie.quote, 1);
+    const ziehtGerade = document.activeElement === regler;
+    if (!ziehtGerade) regler.value = s.kolonie.quote;
+    regler.disabled = Boolean(s.rat.vorschlag);
+    if (!(ziehtGerade && s.rat.aktiv)) $('quote-wert').textContent = zahl(s.kolonie.quote, 1);
     $('quote-text').textContent = quoteText(s.kolonie.quote);
   }
+
+  zeige($('rat'), s.rat.aktiv);
+  if (s.rat.aktiv) renderRat(s);
 
   zeige($('ertrag'), s.frei.ertrag);
   $('ertrag-wert').textContent = zahl(s.ertrag, 1);
@@ -277,6 +305,22 @@ export function render(s) {
   }
 }
 
+function renderRat(s) {
+  const v = s.rat.vorschlag;
+  $('rat-vorschlag').textContent = v
+    ? `${v.text}: berät noch ${Math.ceil((v.bis - s.zeit.spielMs) / 1000)} s`
+    : 'Kein Vorschlag offen.';
+  const l = s.rat.letztes;
+  zeige($('rat-letztes'), Boolean(l));
+  if (l) $('rat-letztes').textContent = `${l.text}: ${l.angenommen ? 'angenommen' : 'abgelehnt'}, ${l.ja} dafür, ${l.nein} dagegen`;
+  const ratBau = s.bau?.vomRat;
+  zeige($('rat-bau'), Boolean(ratBau));
+  if (ratBau) $('rat-bau').textContent = `Der Rat baut: ${EINRICHTUNG_NAME[s.bau.key]}, ${bauAnteil(s)} %`;
+  const eigene = Object.keys(CONFIG.einrichtungen).filter((k) => CONFIG.einrichtungen[k].nurRat && s.bauten[k]);
+  zeige($('rat-gebaut'), eigene.length > 0);
+  $('rat-gebaut').textContent = `Vom Rat gebaut: ${eigene.map((k) => EINRICHTUNG_NAME[k]).join(', ')}`;
+}
+
 export function renderDebug(s, tempo) {
   const k = s.kolonie;
   const sek = Math.floor(s.zeit.spielMs / 1000);
@@ -286,6 +330,7 @@ export function renderDebug(s, tempo) {
     `Phase ${s.phase}  Tick ${s.zeit.ticks}`,
     `A ${zahl(k.leute)}  q ${zahl(k.quote, 2)}`,
     `E ${zahl(k.erschoepfung, 2)}  S ${zahl(k.solidaritaet, 2)}  R ${zahl(k.regeneration, 2)}`,
+    `S Rat ${zahl(s.rat.solidaritaet, 2)}  Sitzungen ${s.rat.sitzungen}`,
     `Ertrag ${zahl(s.ertrag, 2)}`,
     `Energie ${zahl(s.res.energie, 2)}`,
   ].join('\n');

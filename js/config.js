@@ -137,12 +137,59 @@ export const CONFIG = {
 
   // Einrichtungen werden gebaut: Material beim Baubeginn, dann Arbeit.
   // Arbeit = Summe der Leistung aller Leute auf dem Bau, pro Tick.
-  // Fertig brauchen sie eine Person, sonst wirken sie nicht.
-  // R: Regeneration, S: Solidarität, ausbildung: Leistung · (1 + ausbildung).
+  // personal: so viele Leute braucht sie fertig, sonst wirkt sie nicht.
+  // nurRat: baut nur der Rat, von sich aus.
+  // R: Regeneration, S: Solidarität, ausbildung: Leistung · (1 + ausbildung),
+  // produktion: Material pro Tick ohne Personal.
   einrichtungen: {
-    kantine: { kosten: { schrott: 300, algen: 100 }, arbeit: 300, R: 0.3, S: 0.1 },
-    krankenstation: { kosten: { schrott: 500, algen: 100 }, arbeit: 450, R: 0.2, S: 0.1 },
-    schule: { kosten: { schrott: 800, algen: 200 }, arbeit: 700, R: 0.05, S: 0.15, ausbildung: 0.2 },
+    kantine: { kosten: { schrott: 300, algen: 100 }, arbeit: 300, personal: 1, R: 0.3, S: 0.1 },
+    krankenstation: { kosten: { schrott: 500, algen: 100 }, arbeit: 450, personal: 1, R: 0.2, S: 0.1 },
+    schule: {
+      kosten: { schrott: 800, algen: 200 },
+      arbeit: 700,
+      personal: 1,
+      R: 0.05,
+      S: 0.15,
+      ausbildung: 0.2,
+    },
+    ruheraum: { kosten: { schrott: 600, algen: 150 }, arbeit: 500, personal: 0, nurRat: true, R: 0.15, S: 0.05 },
+    gewaechshaus: {
+      kosten: { schrott: 900, algen: 100 },
+      arbeit: 700,
+      personal: 0,
+      nurRat: true,
+      S: 0.05,
+      produktion: { algen: 2 },
+    },
+    versammlung: { kosten: { schrott: 1500, algen: 300 }, arbeit: 1000, personal: 0, nurRat: true, S: 0.15 },
+  },
+
+  rat: {
+    // Der Rat entsteht, sobald so viele Einrichtungen stehen.
+    abEinrichtungen: 2,
+    // So lange berät der Rat über einen Vorschlag.
+    beratungMs: 15000,
+    // Zustimmung (Anteil Ja-Stimmen) je Vorschlag, ± rauschen.
+    rauschen: 0.12,
+    zustimmung: {
+      quoteRunter: 0.85, // kürzere Schichten
+      quoteNormal: 0.7, // zurück auf höchstens 1,0
+      quoteLang: 0.55, // bis 1,2; minus erschoepfungMalus · E
+      quoteDoppel: 0.15, // über 1,2
+      erschoepfungMalus: 2,
+      bau: 0.8,
+      koje: 0.7,
+    },
+    // Solidarität, die der Rat selbst aufbaut, pro Tick und höchstens.
+    sProTick: 0.00015,
+    sMax: 0.5,
+    // Abstand zwischen eigenen Bauvorhaben (auch bis zum ersten), Leute pro Baustelle.
+    bauIntervallMs: 240000,
+    bauLeute: 3,
+    // Ab dieser Erschöpfung setzt der Rat selbst die Normalschicht durch.
+    eingreifenAbE: 0.3,
+    // Abstand zwischen Streitgesprächen ohne Anlass.
+    debatteIntervallMs: 90000,
   },
 
   // Wer die Wand nie erreicht, bekommt die Einrichtungen trotzdem angeboten.

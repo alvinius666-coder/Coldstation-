@@ -1,7 +1,8 @@
 // Spieleraktionen. Ändern nur den Spielstand, kein DOM.
 
 import { CONFIG } from './config.js';
-import { log, einmal, fund, quoteGeaendert, baubeginn, pruefeAusloeser } from './events.js';
+import { log, einmal, fund, quoteGeaendert, baubeginn, EINRICHTUNG_NAME, pruefeAusloeser } from './events.js';
+import { vorschlagen } from './rat.js';
 
 export const COOLDOWN = {
   reaktor: CONFIG.reaktor.cooldownMs,
@@ -95,10 +96,18 @@ export function kojeKosten(s) {
   return out;
 }
 
+// Mit Rat wird daraus ein Vorschlag.
 export function kojeHerrichten(s) {
-  const kosten = kojeKosten(s);
-  if (!bezahlbar(s, kosten)) return;
-  bezahlen(s, kosten);
+  if (!bezahlbar(s, kojeKosten(s))) return;
+  if (s.rat.aktiv) {
+    vorschlagen(s, { art: 'koje', text: 'Kojen herrichten', thema: 'bau' });
+    return;
+  }
+  kojeDirekt(s);
+}
+
+export function kojeDirekt(s) {
+  bezahlen(s, kojeKosten(s));
   s.bauten.kojen++;
   s.notsignal.kojenVoll = false;
   log(s, 'Neue Kojen. Matratzen aus Dämmwolle.');
@@ -111,16 +120,30 @@ export function ohneAufgabe(s) {
 
 export function jobAendern(s, job, delta) {
   if (delta > 0 && ohneAufgabe(s) < delta) return;
-  // Einrichtungen brauchen genau eine Person.
-  if (delta > 0 && CONFIG.einrichtungen[job] && (!s.bauten[job] || s.jobs[job] + delta > 1)) return;
+  // Einrichtungen brauchen genau so viele Leute wie vorgesehen.
+  const e = CONFIG.einrichtungen[job];
+  if (e && e.personal === 0) return;
+  if (delta > 0 && e && (!s.bauten[job] || s.jobs[job] + delta > e.personal)) return;
   if (delta > 0 && job === 'bau' && !s.bau) return;
   if (delta < 0 && s.jobs[job] < -delta) return;
   s.jobs[job] += delta;
 }
 
+// Mit Rat wird daraus ein Vorschlag.
 export function quoteSetzen(s, q) {
   const Q = CONFIG.quote;
-  s.kolonie.quote = Math.round(Math.min(Q.max, Math.max(Q.min, q)) * 10) / 10;
+  const wert = Math.round(Math.min(Q.max, Math.max(Q.min, q)) * 10) / 10;
+  if (wert === s.kolonie.quote) return;
+  if (s.rat.aktiv) {
+    const text = `Schicht auf ${wert.toLocaleString('de-DE', { minimumFractionDigits: 1 })}`;
+    vorschlagen(s, { art: 'quote', wert, text, thema: wert > s.kolonie.quote ? 'quoteHoch' : 'quoteRunter' });
+    return;
+  }
+  quoteDirekt(s, wert);
+}
+
+export function quoteDirekt(s, wert) {
+  s.kolonie.quote = wert;
   quoteGeaendert(s);
 }
 
@@ -128,12 +151,19 @@ export function einrichtungKosten(key) {
   return CONFIG.einrichtungen[key].kosten;
 }
 
-// Startet eine Baustelle. Es läuft immer nur eine.
+// Startet eine Baustelle, mit Rat als Vorschlag. Es läuft immer nur eine.
 export function einrichtungBauen(s, key) {
-  const kosten = einrichtungKosten(key);
-  if (s.bauten[key] || s.bau || !s.frei[key] || !bezahlbar(s, kosten)) return;
-  bezahlen(s, kosten);
-  s.bau = { key, fortschritt: 0 };
+  if (s.bauten[key] || s.bau || !s.frei[key] || !bezahlbar(s, einrichtungKosten(key))) return;
+  if (s.rat.aktiv) {
+    vorschlagen(s, { art: 'bau', key, text: `${EINRICHTUNG_NAME[key]} bauen`, thema: 'bau' });
+    return;
+  }
+  bauStarten(s, key, false);
+}
+
+export function bauStarten(s, key, vomRat) {
+  bezahlen(s, einrichtungKosten(key));
+  s.bau = { key, fortschritt: 0, vomRat };
   baubeginn(s, key);
   pruefeAusloeser(s);
 }

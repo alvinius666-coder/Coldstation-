@@ -58,7 +58,8 @@ const STRATEGIEN = {
   // Normalschicht, Einrichtungen bauen und besetzen, sobald möglich.
   kollektiv(s) {
     if (s.kolonie.leute > 0) A.quoteSetzen(s, s.kolonie.erschoepfung > 0.15 ? 0.8 : 1.0);
-    for (const key of Object.keys(CONFIG.einrichtungen)) {
+    for (const [key, e] of Object.entries(CONFIG.einrichtungen)) {
+      if (e.nurRat) continue;
       A.einrichtungBauen(s, key);
       if (s.bauten[key] && s.jobs[key] === 0) frei(s, 1);
       if (s.bauten[key]) A.jobAendern(s, key, 1);

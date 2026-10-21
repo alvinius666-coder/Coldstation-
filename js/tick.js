@@ -1,6 +1,7 @@
 // Ein Spieltick. Ändert nur den Spielstand, kein DOM.
 
 import { CONFIG } from './config.js';
+import { ratTick } from './rat.js';
 import {
   kabineGeaendert,
   tanksStehen,
@@ -30,9 +31,10 @@ export function kojen(s) {
   return CONFIG.leute.kojenStart + s.bauten.kojen * CONFIG.leute.kojePlaetze;
 }
 
-// Einrichtungen wirken nur, wenn gebaut und besetzt.
+// Einrichtungen wirken nur, wenn gebaut und (falls nötig) besetzt.
 export function besetzt(s, key) {
-  return s.bauten[key] && s.jobs[key] > 0;
+  const e = CONFIG.einrichtungen[key];
+  return Boolean(s.bauten[key]) && (e.personal === 0 || s.jobs[key] >= e.personal);
 }
 
 function einrichtungsSumme(s, feld) {
@@ -118,7 +120,7 @@ function erschoepfung(s) {
   const last = k.quote + (s.mangel.hunger ? C.mangelLast : 0) + (s.mangel.kaelte ? C.mangelLast : 0);
   k.erschoepfung = klemmen(k.erschoepfung + C.k * (last - R), 0, 1);
   k.regeneration = R;
-  k.solidaritaet = einrichtungsSumme(s, 'S');
+  k.solidaritaet = einrichtungsSumme(s, 'S') + s.rat.solidaritaet;
 
   const E = k.erschoepfung;
   const U = CONFIG.unfall;
@@ -197,6 +199,15 @@ export function tick(s) {
     }
   }
 
+  // Einrichtungen, die selbst etwas liefern (Gewächshaus)
+  for (const [key, e] of Object.entries(CONFIG.einrichtungen)) {
+    if (!e.produktion || !besetzt(s, key)) continue;
+    for (const [r, n] of Object.entries(e.produktion)) {
+      res[r] += n;
+      ertrag += n;
+    }
+  }
+
   // Leute arbeiten
   const f = leistung(s);
   for (const [job, def] of Object.entries(CONFIG.jobs)) {
@@ -231,6 +242,7 @@ export function tick(s) {
   }
 
   bauen(s, f);
+  ratTick(s);
   erschoepfung(s);
   heilen(s);
   ankuenfte(s);

@@ -122,6 +122,10 @@ h2 {
 }
 #leute-zahl { color: var(--fg); }
 #leute-zustand { color: var(--fg); }
+#rat { display: flex; flex-direction: column; gap: 4px; }
+#rat h2 { margin-bottom: 2px; }
+.leise { color: var(--dim); }
+#quote:disabled { opacity: 0.4; }
 #debug-sim { margin: 6px 0 0; max-height: 50vh; overflow: auto; }
 #mitte h2 label { cursor: inherit; }
 

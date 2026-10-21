@@ -98,13 +98,52 @@ const EINGERICHTET = {
   kantine: 'Die Kantine ist warm. Es riecht nach Algenbrot.',
   krankenstation: 'Die Krankenstation hat sechs Betten und einen Kasten Verbandszeug.',
   schule: 'In der Werkschule hängt eine Tafel. Jemand schreibt darauf.',
+  ruheraum: 'Der Ruheraum ist dunkel und still. Er ist nie leer.',
+  gewaechshaus: 'Im Gewächshaus wachsen Algen auf Draht. Jemand hat Tomaten dazugesetzt.',
+  versammlung: 'Die Versammlungshalle hat keine Bühne. Die Stühle stehen im Kreis.',
 };
 
 export const EINRICHTUNG_NAME = {
   kantine: 'Kantine',
   krankenstation: 'Krankenstation',
   schule: 'Werkschule',
+  ruheraum: 'Ruheraum',
+  gewaechshaus: 'Gewächshaus',
+  versammlung: 'Versammlungshalle',
 };
+
+// Streitgespräche im Rat: zwei Stimmen, je eine Zeile. Nach Anlass sortiert.
+const DEBATTEN = {
+  quoteHoch: [
+    ['Der Lader: „Mehr Schicht, mehr Erz. Wir brauchen Reserven.“', 'Die Sanitäterin: „Ich habe sechs Betten. Die waren schon mal voll.“'],
+    ['Der Bohrhauer: „Ich kann noch. Lass mich arbeiten.“', 'Die alte Schweißerin: „Das hast du früher auch gesagt. Dann kam die Liste.“'],
+    ['Der Rohrleger: „Ein paar Wochen Doppelschicht, dann sind wir durch.“', 'Die Frau aus Schacht 2: „Durch womit? Mit uns?“'],
+  ],
+  quoteRunter: [
+    ['Der Koch: „Wer ausgeschlafen ist, verbrennt sich nicht.“', 'Der Lader: „Und wer schafft dann das Erz?“'],
+    ['Die Technikerin: „Weniger Stunden, weniger Fehler. Ich hab’s gezählt.“', 'Der Bohrhauer: „Gezählt hat hier früher nur einer.“'],
+  ],
+  bau: [
+    ['Die Technikerin: „Gute Idee. Aber wer baut?“', 'Der Junge: „Ich.“'],
+    ['Der Rohrleger: „Erst die Rohre in Schacht 2.“', 'Die Frau aus Schacht 2: „Die Rohre laufen nicht weg. Die Leute schon.“'],
+    ['Der Lader: „Das Material bräuchten wir für Kojen.“', 'Der Koch: „Kojen für wen? Für Leute, die nicht bleiben wollen?“'],
+  ],
+  allgemein: [
+    ['Der Bohrhauer: „Wozu ein Rat? Früher gab es den Schichtleiter.“', 'Die alte Schweißerin: „Ja. Früher.“'],
+    ['Der Funker: „Andere Stationen funken auch. Wir könnten teilen.“', 'Der Lader: „Teilen? Wir haben selbst kaum genug.“'],
+    ['Die Technikerin: „Im Hangar steht der alte Schlepper. Den könnte man flicken.“', 'Der Koch: „Und dann? Abhauen?“'],
+    ['Der Junge: „Wer entscheidet eigentlich, wer im Rat sitzt?“', 'Die Sanitäterin: „Alle. Du auch.“'],
+    ['Die Frau aus Schacht 2: „Der Überschuss liegt im Lager. Wem gehört der?“', 'Der Funker: „Wem gehörte er vorher?“'],
+  ],
+};
+
+export function debatte(s, thema) {
+  const liste = DEBATTEN[thema];
+  const offen = liste.map((_, i) => i).filter((i) => !s.gesehen[`debatte_${thema}_${i}`]);
+  const i = offen.length > 0 ? offen[Math.floor(Math.random() * offen.length)] : Math.floor(Math.random() * liste.length);
+  s.gesehen[`debatte_${thema}_${i}`] = true;
+  for (const zeile of liste[i]) log(s, zeile);
+}
 
 export function baubeginn(s, key) {
   log(s, `Baustelle: ${EINRICHTUNG_NAME[key]}. Es braucht Hände.`);
@@ -181,6 +220,17 @@ export function pruefeAusloeser(s) {
     frei.krankenstation = true;
     log(s, 'Die Sanitäterin braucht einen Raum.');
   }
+  // Phase 4: der Rat.
+  const stehen = Object.keys(CONFIG.einrichtungen).filter((key) => bauten[key]).length;
+  if (s.phase === 3 && stehen >= CONFIG.rat.abEinrichtungen) {
+    s.phase = 4;
+    s.rat.aktiv = true;
+    s.rat.naechsterBau = s.zeit.spielMs + CONFIG.rat.bauIntervallMs;
+    s.rat.naechsteDebatte = s.zeit.spielMs + CONFIG.rat.debatteIntervallMs / 3;
+    log(s, 'Nach dem Essen bleiben alle sitzen.');
+    log(s, 'Die alte Schweißerin: „Ab jetzt reden wir mit. Über alles.“');
+  }
+
   if (!frei.schule && bauten.kantine && bauten.krankenstation) {
     frei.schule = true;
     log(s, 'Die Technikerin will den Jungen etwas beibringen. Und den anderen.');

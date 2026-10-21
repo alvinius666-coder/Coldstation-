@@ -13,7 +13,7 @@ export function neuerSpielstand() {
     res: { energie: CONFIG.energie.start, schrott: 0, algen: 0 },
     kolonie: { ...CONFIG.kolonie },
     jobs: { schrott: 0, algen: 0, energie: 0, bau: 0, kantine: 0, krankenstation: 0, schule: 0 },
-    bau: null, // { key, fortschritt } der laufenden Baustelle
+    bau: null, // { key, fortschritt, vomRat } der laufenden Baustelle
     bauten: {
       algentank: 0,
       reaktorRepariert: false,
@@ -21,6 +21,9 @@ export function neuerSpielstand() {
       kantine: false,
       krankenstation: false,
       schule: false,
+      ruheraum: false,
+      gewaechshaus: false,
+      versammlung: false,
     },
     verletzte: [], // { job, bis }
     frei: {
@@ -36,6 +39,15 @@ export function neuerSpielstand() {
       schule: false,
     },
     kantineMs: 0, // wie lange die Kantine schon besetzt ist
+    rat: {
+      aktiv: false,
+      vorschlag: null, // { art, key | wert, text, thema, bis }
+      letztes: null, // { text, ja, nein, angenommen }
+      sitzungen: 0,
+      solidaritaet: 0, // Anteil an S, den der Rat selbst aufbaut
+      naechsterBau: 0,
+      naechsteDebatte: 0,
+    },
     notsignal: { gesendet: false, naechsteAnkunft: 0, ankuenfte: 0, kojenVoll: false },
     mangel: { hunger: false, kaelte: false },
     phase: 1,
