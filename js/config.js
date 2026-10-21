@@ -61,6 +61,42 @@ export const CONFIG = {
     hysterese: 5,
   },
 
+  notsignal: {
+    // Funkpult wird nutzbar, sobald Energie diesen Wert überschreitet.
+    freiAbEnergie: 50,
+    kosten: { energie: 20 },
+  },
+
+  leute: {
+    // Erste Ankunft nach dem Notsignal, danach im Abstand Intervall ± Streuung.
+    // Jede Ankunft verlängert den Abstand um ankunftZuwachs (Anteil):
+    // ca. 6 Leute nach 5 min Spielzeit, ca. 17 nach 15 min.
+    ersteAnkunftMs: 15000,
+    ankunftIntervallMs: 20000,
+    ankunftZuwachs: 0.15,
+    ankunftStreuung: 0.5, // ±25 %
+    // Kojen: Startplätze, jede hergerichtete Koje bringt weitere.
+    kojenStart: 4,
+    kojePlaetze: 2,
+    kojeKosten: { schrott: 15 },
+    kojeFaktor: 1.4,
+    // Verbrauch pro Person und Tick.
+    algenProKopf: 0.2,
+    energieProKopf: 0.1,
+    // Hunger oder Kälte: Leistung der Leute mal diesen Faktor.
+    mangelFaktor: 0.5,
+  },
+
+  // Ertrag einer Person pro Tick bei q = 1, E = 0, S = 0.
+  jobs: {
+    schrott: { res: 'schrott', proTick: 1.0 },
+    algen: { res: 'algen', proTick: 1.0 },
+    energie: { res: 'energie', proTick: 1.0 },
+  },
+
+  // Schichtregler q.
+  quote: { min: 0.5, max: 1.5, schritt: 0.1 },
+
   // Startwerte der Kolonie. Ab Block 2/3 in Gebrauch.
   // Ertrag = A · q · (1 − E) · (1 + S),  ΔE = k · (q − R)
   kolonie: {

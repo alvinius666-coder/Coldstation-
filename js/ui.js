@@ -3,8 +3,10 @@
 import { CONFIG } from './config.js';
 import { KABINE } from './events.js';
 import * as A from './actions.js';
+import { kojen } from './tick.js';
 
 const NAMEN = { energie: 'Energie', schrott: 'Schrott', algen: 'Algen' };
+const JOBS = { schrott: 'Ausschlachten', algen: 'Algentanks', energie: 'Reaktor' };
 
 const AKTIONEN = [
   {
@@ -35,6 +37,20 @@ const AKTIONEN = [
     kosten: A.reaktorKosten,
     tun: A.reaktorFlicken,
   },
+  {
+    id: 'notsignal',
+    text: () => 'Notsignal senden',
+    sichtbar: (s) => s.frei.notsignal && !s.notsignal.gesendet,
+    kosten: A.notsignalKosten,
+    tun: A.notsignalSenden,
+  },
+  {
+    id: 'koje',
+    text: () => 'Kojen herrichten',
+    sichtbar: (s) => s.frei.leute,
+    kosten: A.kojeKosten,
+    tun: A.kojeHerrichten,
+  },
 ];
 
 const VORRAETE = [
@@ -47,6 +63,19 @@ const $ = (id) => document.getElementById(id);
 
 function zahl(n, stellen = 0) {
   return n.toLocaleString('de-DE', { minimumFractionDigits: stellen, maximumFractionDigits: stellen });
+}
+
+function vorzeichen(n) {
+  const r = Math.round(n * 10) / 10;
+  if (r === 0) return '';
+  return (r > 0 ? '+' : '−') + zahl(Math.abs(r), 1);
+}
+
+function quoteText(q) {
+  if (q < 0.8) return 'kurze Schichten';
+  if (q < 1.2) return 'Normalschicht';
+  if (q < 1.45) return 'lange Schichten';
+  return 'Doppelschichten';
 }
 
 function kostenText(kosten) {
@@ -67,6 +96,7 @@ function zeige(el, an) {
 
 let knoepfe = [];
 let zeilen = [];
+let jobZeilen = [];
 let letzteLogNr = -1;
 
 export function initUI(holeSpiel) {
@@ -89,9 +119,40 @@ export function initUI(holeSpiel) {
     const el = document.createElement('div');
     el.className = 'vorrat';
     el.hidden = true;
-    el.innerHTML = `<span>${NAMEN[def.key]}</span><span class="wert"></span>`;
+    el.innerHTML = `<span>${NAMEN[def.key]}</span><span class="rate"></span><span class="wert"></span>`;
     liste.appendChild(el);
-    return { def, el, wert: el.querySelector('.wert') };
+    return { def, el, wert: el.querySelector('.wert'), rate: el.querySelector('.rate') };
+  });
+
+  const jobListe = $('job-liste');
+  jobZeilen = Object.entries(JOBS).map(([job, name]) => {
+    const el = document.createElement('div');
+    el.className = 'job';
+    el.innerHTML =
+      `<span>${name}</span>` +
+      `<button aria-label="${name}: eine Person weniger">−</button>` +
+      `<span class="n"></span>` +
+      `<button aria-label="${name}: eine Person mehr">+</button>`;
+    const [minus, plus] = el.querySelectorAll('button');
+    minus.addEventListener('click', () => {
+      A.jobAendern(holeSpiel(), job, -1);
+      render(holeSpiel());
+    });
+    plus.addEventListener('click', () => {
+      A.jobAendern(holeSpiel(), job, 1);
+      render(holeSpiel());
+    });
+    jobListe.appendChild(el);
+    return { job, minus, plus, n: el.querySelector('.n') };
+  });
+
+  const regler = $('quote');
+  regler.min = CONFIG.quote.min;
+  regler.max = CONFIG.quote.max;
+  regler.step = CONFIG.quote.schritt;
+  regler.addEventListener('input', () => {
+    A.quoteSetzen(holeSpiel(), Number(regler.value));
+    render(holeSpiel());
   });
 }
 
@@ -102,9 +163,12 @@ export function zuruecksetzen() {
   for (const z of zeilen) z.el.hidden = true;
   $('vorraete').hidden = true;
   $('ertrag').hidden = true;
+  $('leute').hidden = true;
+  $('schicht').hidden = true;
 }
 
 export function render(s) {
+  $('ort-name').textContent = s.kolonie.leute > 0 ? 'Station' : 'Kabine';
   $('temp').textContent = KABINE[s.kabine];
 
   for (const k of knoepfe) {
@@ -131,6 +195,27 @@ export function render(s) {
   for (const z of zeilen) {
     zeige(z.el, z.def.sichtbar(s));
     z.wert.textContent = zahl(Math.floor(s.res[z.def.key]));
+    z.rate.textContent = s.frei.leute ? vorzeichen(s.raten[z.def.key]) : '';
+  }
+
+  zeige($('leute'), s.frei.leute);
+  if (s.frei.leute) {
+    const frei = A.ohneAufgabe(s);
+    $('leute-zahl').textContent = `${s.kolonie.leute} / ${kojen(s)}`;
+    $('leute-frei').textContent = frei;
+    for (const z of jobZeilen) {
+      z.n.textContent = s.jobs[z.job];
+      z.minus.disabled = s.jobs[z.job] === 0;
+      z.plus.disabled = frei === 0;
+    }
+  }
+
+  zeige($('schicht'), s.frei.leute);
+  if (s.frei.leute) {
+    const regler = $('quote');
+    if (document.activeElement !== regler) regler.value = s.kolonie.quote;
+    $('quote-wert').textContent = zahl(s.kolonie.quote, 1);
+    $('quote-text').textContent = quoteText(s.kolonie.quote);
   }
 
   zeige($('ertrag'), s.frei.ertrag);

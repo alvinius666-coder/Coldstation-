@@ -12,11 +12,23 @@ export function neuerSpielstand() {
     zeit: { spielMs: 0, ticks: 0 },
     res: { energie: CONFIG.energie.start, schrott: 0, algen: 0 },
     kolonie: { ...CONFIG.kolonie },
-    bauten: { algentank: 0, reaktorRepariert: false },
-    frei: { vorraete: false, schrott: false, algentank: false, reaktorReparatur: false, ertrag: false },
+    jobs: { schrott: 0, algen: 0, energie: 0 },
+    bauten: { algentank: 0, reaktorRepariert: false, kojen: 0 },
+    frei: {
+      vorraete: false,
+      schrott: false,
+      algentank: false,
+      reaktorReparatur: false,
+      ertrag: false,
+      notsignal: false,
+      leute: false,
+    },
+    notsignal: { gesendet: false, naechsteAnkunft: 0, ankuenfte: 0, kojenVoll: false },
+    mangel: { hunger: false, kaelte: false },
     phase: 1,
     kabine: 0, // Index der Temperaturstufe
     ertrag: 0, // Materialproduktion im letzten Tick
+    raten: { energie: 0, schrott: 0, algen: 0 }, // Nettoänderung im letzten Tick
     tanksStehen: false,
     cooldowns: { reaktor: 0, schrott: 0 }, // Spielzeit, ab der wieder bereit
     gesehen: {}, // einmalige Ereignisse

@@ -45,7 +45,7 @@ body {
 
 #spalten {
   display: grid;
-  grid-template-columns: 230px 170px 1fr;
+  grid-template-columns: 230px 240px 1fr;
   gap: 32px;
   align-items: start;
 }
@@ -65,6 +65,7 @@ button {
   cursor: pointer;
 }
 button:hover:not(:disabled) { border-color: var(--fg); }
+button:focus-visible, input:focus-visible { outline: 1px solid var(--akzent); outline-offset: 2px; }
 button:disabled { color: var(--dim); cursor: default; }
 
 .aktion {
@@ -89,11 +90,38 @@ h2 {
   color: var(--dim);
   margin: 0 0 6px;
 }
+#mitte {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 .vorrat {
   display: flex;
   justify-content: space-between;
+  gap: 8px;
   font-variant-numeric: tabular-nums;
 }
+.vorrat .rate {
+  margin-left: auto;
+  color: var(--dim);
+  font-size: 0.85em;
+}
+.job {
+  display: grid;
+  grid-template-columns: 1fr auto 2.5em auto;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.job .n { text-align: center; }
+.job button { padding: 0 8px; line-height: 1.4; }
+#quote {
+  width: 100%;
+  accent-color: var(--akzent);
+}
+#leute-zahl { color: var(--fg); }
+#mitte h2 label { cursor: inherit; }
 
 #log {
   list-style: none;

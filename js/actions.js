@@ -1,7 +1,7 @@
 // Spieleraktionen. Ändern nur den Spielstand, kein DOM.
 
 import { CONFIG } from './config.js';
-import { log, einmal, fund, pruefeAusloeser } from './events.js';
+import { log, einmal, fund, quoteGeaendert, pruefeAusloeser } from './events.js';
 
 export const COOLDOWN = {
   reaktor: CONFIG.reaktor.cooldownMs,
@@ -70,4 +70,53 @@ export function reaktorFlicken(s) {
   s.bauten.reaktorRepariert = true;
   log(s, 'Der Reaktor brummt. Er hält sich selbst.');
   pruefeAusloeser(s);
+}
+
+export function notsignalKosten() {
+  return CONFIG.notsignal.kosten;
+}
+
+export function notsignalSenden(s) {
+  const kosten = notsignalKosten();
+  if (s.notsignal.gesendet || !bezahlbar(s, kosten)) return;
+  bezahlen(s, kosten);
+  s.notsignal.gesendet = true;
+  s.notsignal.naechsteAnkunft = s.zeit.spielMs + CONFIG.leute.ersteAnkunftMs;
+  s.phase = 2;
+  log(s, 'Das Signal geht raus. Rauschen.');
+  pruefeAusloeser(s);
+}
+
+export function kojeKosten(s) {
+  const L = CONFIG.leute;
+  const faktor = L.kojeFaktor ** s.bauten.kojen;
+  const out = {};
+  for (const [r, n] of Object.entries(L.kojeKosten)) out[r] = Math.round(n * faktor);
+  return out;
+}
+
+export function kojeHerrichten(s) {
+  const kosten = kojeKosten(s);
+  if (!bezahlbar(s, kosten)) return;
+  bezahlen(s, kosten);
+  s.bauten.kojen++;
+  s.notsignal.kojenVoll = false;
+  log(s, 'Neue Kojen. Matratzen aus Dämmwolle.');
+  pruefeAusloeser(s);
+}
+
+export function ohneAufgabe(s) {
+  return s.kolonie.leute - Object.values(s.jobs).reduce((a, b) => a + b, 0);
+}
+
+export function jobAendern(s, job, delta) {
+  if (delta > 0 && ohneAufgabe(s) < delta) return;
+  if (delta < 0 && s.jobs[job] < -delta) return;
+  s.jobs[job] += delta;
+}
+
+export function quoteSetzen(s, q) {
+  const Q = CONFIG.quote;
+  s.kolonie.quote = Math.round(Math.min(Q.max, Math.max(Q.min, q)) * 10) / 10;
+  quoteGeaendert(s);
 }

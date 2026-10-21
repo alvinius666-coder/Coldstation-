@@ -8,7 +8,7 @@
 </head>
 <body>
   <main id="spiel">
-    <header id="ort">Kabine · <span id="temp"></span></header>
+    <header id="ort"><span id="ort-name">Kabine</span> · <span id="temp"></span></header>
 
     <section id="ertrag" hidden>
       <span class="label">Ertrag</span>
@@ -18,10 +18,22 @@
 
     <div id="spalten">
       <section id="aktionen"></section>
-      <section id="vorraete" hidden>
-        <h2>Vorräte</h2>
-        <div id="vorrat-liste"></div>
-      </section>
+      <div id="mitte">
+        <section id="vorraete" hidden>
+          <h2>Vorräte</h2>
+          <div id="vorrat-liste"></div>
+        </section>
+        <section id="leute" hidden>
+          <h2>Leute <span id="leute-zahl"></span></h2>
+          <div id="job-liste"></div>
+          <div class="vorrat"><span>ohne Aufgabe</span><span id="leute-frei"></span></div>
+        </section>
+        <section id="schicht" hidden>
+          <h2><label for="quote">Schicht</label></h2>
+          <input type="range" id="quote" min="0.5" max="1.5" step="0.1" value="1">
+          <div class="vorrat"><span id="quote-text"></span><span id="quote-wert"></span></div>
+        </section>
+      </div>
       <ul id="log"></ul>
     </div>
   </main>
@@ -43,6 +55,7 @@
     <pre id="debug-werte"></pre>
     <button id="dbg-energie">+20 Energie</button>
     <button id="dbg-schrott">+50 Schrott</button>
+    <button id="dbg-person">+1 Person</button>
   </aside>
 
   <noscript>Die Station braucht JavaScript.</noscript>

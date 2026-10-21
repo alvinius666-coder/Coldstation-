@@ -13,6 +13,21 @@ export const FUNDE = [
   'Eine Quotentafel. Die letzte Woche rot unterstrichen.',
 ];
 
+// Ankünfte nach dem Notsignal, in dieser Reihenfolge. Danach ANKUNFT_REST.
+export const ANKUENFTE = [
+  'Jemand klopft an die Schleuse. Ein Bohrhauer, halb erfroren.',
+  'Eine Technikerin aus Schacht 4. Sie hat ihr Werkzeug dabei.',
+  'Ein Junge aus der Raffinerie. Zu jung für die Liste.',
+  'Eine ältere Frau, Schweißerin. Sie sieht dich lange an.',
+  'Ein Koch. Er fragt zuerst nach den Tanks.',
+  'Ein Mann mit Handfunkgerät. Er hat das Signal gehört.',
+  'Eine Sanitäterin ohne Medikamente.',
+  'Ein Lader aus dem Hangar. Er war beim letzten Shuttle. Nicht drin.',
+  'Eine Frau mit Narben an den Händen. Schacht 2.',
+  'Ein Rohrleger. Er sagt nichts.',
+];
+const ANKUNFT_REST = 'Noch jemand kommt durch die Schleuse.';
+
 export function log(s, text) {
   s.log.unshift({ t: s.zeit.spielMs, text });
   if (s.log.length > CONFIG.logMax) s.log.length = CONFIG.logMax;
@@ -32,7 +47,31 @@ export function startTexte(s) {
 }
 
 export function kabineGeaendert(s) {
-  log(s, `Die Kabine ist ${KABINE[s.kabine]}.`);
+  const ort = s.kolonie.leute > 0 ? 'Die Station' : 'Die Kabine';
+  log(s, `${ort} ist ${KABINE[s.kabine]}.`);
+}
+
+export function ankunft(s) {
+  const i = s.notsignal.ankuenfte - 1;
+  log(s, ANKUENFTE[i] ?? ANKUNFT_REST);
+}
+
+export function kojenVoll(s) {
+  log(s, 'Die Kojen sind voll. Jemand schläft im Gang.');
+}
+
+export function mangel(s, art, an) {
+  const texte = {
+    hunger: ['Die Algen sind alle. Es wird hungrig gearbeitet.', 'Es gibt wieder zu essen.'],
+    kaelte: ['Zu wenig Strom. Die Leute frieren bei der Arbeit.', 'Die Heizung läuft wieder.'],
+  };
+  log(s, texte[art][an ? 0 : 1]);
+}
+
+export function quoteGeaendert(s) {
+  const q = s.kolonie.quote;
+  if (q >= 1.4) einmal(s, 'quoteHoch', 'Doppelschichten. Niemand widerspricht.');
+  if (q <= 0.6) einmal(s, 'quoteNiedrig', 'Kurze Schichten. Die Leute sehen dich fragend an.');
 }
 
 export function tanksStehen(s, stehen) {
@@ -67,5 +106,12 @@ export function pruefeAusloeser(s) {
   }
   if (!frei.ertrag && s.ertrag > 0) {
     frei.ertrag = true;
+  }
+  if (!frei.notsignal && res.energie > CONFIG.notsignal.freiAbEnergie) {
+    frei.notsignal = true;
+    log(s, 'Das Funkpult hat wieder Strom.');
+  }
+  if (!frei.leute && s.kolonie.leute > 0) {
+    frei.leute = true;
   }
 }

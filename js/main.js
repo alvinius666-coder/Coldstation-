@@ -96,6 +96,9 @@ if (debug) {
   $('dbg-schrott').addEventListener('click', () => {
     s.res.schrott += 50;
   });
+  $('dbg-person').addEventListener('click', () => {
+    s.kolonie.leute++;
+  });
 }
 
 initUI(() => s);
