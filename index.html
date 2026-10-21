@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kalte Station</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="spiel">
+    <header id="ort">Kabine · <span id="temp"></span></header>
+
+    <section id="ertrag" hidden>
+      <span class="label">Ertrag</span>
+      <span id="ertrag-wert">0</span>
+      <span class="label">pro Tick</span>
+    </section>
+
+    <div id="spalten">
+      <section id="aktionen"></section>
+      <section id="vorraete" hidden>
+        <h2>Vorräte</h2>
+        <div id="vorrat-liste"></div>
+      </section>
+      <ul id="log"></ul>
+    </div>
+  </main>
+
+  <footer>
+    <button id="spielstand-auf" class="link">Spielstand</button>
+    <div id="spielstand" hidden>
+      <textarea id="spielstand-text" rows="4" spellcheck="false" placeholder="Spielstand hier einfügen"></textarea>
+      <div class="zeile">
+        <button id="export">Exportieren</button>
+        <button id="import">Importieren</button>
+        <button id="neustart">Neustart</button>
+        <span id="spielstand-meldung"></span>
+      </div>
+    </div>
+  </footer>
+
+  <aside id="debug" hidden>
+    <pre id="debug-werte"></pre>
+    <button id="dbg-energie">+20 Energie</button>
+    <button id="dbg-schrott">+50 Schrott</button>
+  </aside>
+
+  <noscript>Die Station braucht JavaScript.</noscript>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

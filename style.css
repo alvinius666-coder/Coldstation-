@@ -1,0 +1,153 @@
+:root {
+  --bg: #0c0e10;
+  --fg: #c8cdd2;
+  --dim: #6b737b;
+  --rand: #3a4148;
+  --balken: #262c32;
+  --akzent: #e6e9ec;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.5 ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+#spiel {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+#ort {
+  color: var(--dim);
+  margin-bottom: 24px;
+}
+#temp { color: var(--fg); }
+
+#ertrag {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+#ertrag .label { color: var(--dim); }
+#ertrag-wert {
+  font-size: 2.4em;
+  color: var(--akzent);
+  font-variant-numeric: tabular-nums;
+}
+
+#spalten {
+  display: grid;
+  grid-template-columns: 230px 170px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+#aktionen {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+button {
+  font: inherit;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--rand);
+  padding: 6px 10px;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: var(--fg); }
+button:disabled { color: var(--dim); cursor: default; }
+
+.aktion {
+  position: relative;
+  text-align: left;
+  overflow: hidden;
+}
+.aktion .text,
+.aktion .kosten { position: relative; z-index: 1; display: block; }
+.aktion .kosten { color: var(--dim); font-size: 0.85em; }
+.aktion .kosten:empty { display: none; }
+.aktion .balken {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: var(--balken);
+}
+
+h2 {
+  font-size: 1em;
+  font-weight: normal;
+  color: var(--dim);
+  margin: 0 0 6px;
+}
+.vorrat {
+  display: flex;
+  justify-content: space-between;
+  font-variant-numeric: tabular-nums;
+}
+
+#log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#log li { margin-bottom: 6px; }
+
+.neu { animation: auftauchen 1.2s ease-out; }
+@keyframes auftauchen {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+footer {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 16px 24px;
+  font-size: 0.85em;
+}
+.link {
+  border: none;
+  padding: 0;
+  color: var(--dim);
+  text-decoration: underline;
+}
+#spielstand textarea {
+  width: 100%;
+  margin: 8px 0;
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--rand);
+  font: inherit;
+}
+#spielstand .zeile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+#spielstand-meldung { color: var(--dim); }
+
+#debug {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid var(--rand);
+  font-size: 12px;
+}
+#debug pre { margin: 0 0 6px; }
+#debug button { font-size: 11px; padding: 2px 6px; }
+
+@media (max-width: 720px) {
+  #spalten { grid-template-columns: 1fr; gap: 24px; }
+  #aktionen { max-width: 280px; }
+}
