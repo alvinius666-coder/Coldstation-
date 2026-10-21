@@ -5,6 +5,7 @@
   --rand: #3a4148;
   --balken: #262c32;
   --akzent: #e6e9ec;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }

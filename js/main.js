@@ -6,7 +6,7 @@ import { tick } from './tick.js';
 import { startTexte } from './events.js';
 import { initUI, render, renderDebug, zuruecksetzen } from './ui.js';
 
-const debug = new URLSearchParams(location.search).get('debug') === '1';
+const debug = new URLSearchParams(location.search).get('debug') === '1' || location.hash === '#debug';
 const tempo = debug ? CONFIG.debugTempo : 1;
 
 function neuesSpiel() {
@@ -69,8 +69,20 @@ $('import').addEventListener('click', () => {
     meldung('Das ist kein gültiger Spielstand.');
   }
 });
+// Neustart braucht einen zweiten Klick (confirm() ist nicht überall erlaubt).
+let neustartScharf = false;
 $('neustart').addEventListener('click', () => {
-  if (!confirm('Alles löschen und neu beginnen?')) return;
+  if (!neustartScharf) {
+    neustartScharf = true;
+    $('neustart').textContent = 'Wirklich alles löschen?';
+    setTimeout(() => {
+      neustartScharf = false;
+      $('neustart').textContent = 'Neustart';
+    }, 4000);
+    return;
+  }
+  neustartScharf = false;
+  $('neustart').textContent = 'Neustart';
   ersetzen(neuesSpiel());
   meldung('Neu begonnen.');
 });
