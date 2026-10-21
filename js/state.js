@@ -12,8 +12,17 @@ export function neuerSpielstand() {
     zeit: { spielMs: 0, ticks: 0 },
     res: { energie: CONFIG.energie.start, schrott: 0, algen: 0 },
     kolonie: { ...CONFIG.kolonie },
-    jobs: { schrott: 0, algen: 0, energie: 0 },
-    bauten: { algentank: 0, reaktorRepariert: false, kojen: 0 },
+    jobs: { schrott: 0, algen: 0, energie: 0, bau: 0, kantine: 0, krankenstation: 0, schule: 0 },
+    bau: null, // { key, fortschritt } der laufenden Baustelle
+    bauten: {
+      algentank: 0,
+      reaktorRepariert: false,
+      kojen: 0,
+      kantine: false,
+      krankenstation: false,
+      schule: false,
+    },
+    verletzte: [], // { job, bis }
     frei: {
       vorraete: false,
       schrott: false,
@@ -22,7 +31,11 @@ export function neuerSpielstand() {
       ertrag: false,
       notsignal: false,
       leute: false,
+      kantine: false,
+      krankenstation: false,
+      schule: false,
     },
+    kantineMs: 0, // wie lange die Kantine schon besetzt ist
     notsignal: { gesendet: false, naechsteAnkunft: 0, ankuenfte: 0, kojenVoll: false },
     mangel: { hunger: false, kaelte: false },
     phase: 1,

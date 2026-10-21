@@ -99,6 +99,12 @@ if (debug) {
   $('dbg-person').addEventListener('click', () => {
     s.kolonie.leute++;
   });
+  $('dbg-sim').addEventListener('click', async () => {
+    const { bericht } = await import('./sim.js');
+    const pre = $('debug-sim');
+    pre.textContent = bericht();
+    pre.hidden = false;
+  });
 }
 
 initUI(() => s);

@@ -24,9 +24,10 @@
           <div id="vorrat-liste"></div>
         </section>
         <section id="leute" hidden>
-          <h2>Leute <span id="leute-zahl"></span></h2>
+          <h2>Leute <span id="leute-zahl"></span> <span id="leute-zustand"></span></h2>
           <div id="job-liste"></div>
           <div class="vorrat"><span>ohne Aufgabe</span><span id="leute-frei"></span></div>
+          <div class="vorrat" id="verletzt-zeile" hidden><span>verletzt</span><span id="leute-verletzt"></span></div>
         </section>
         <section id="schicht" hidden>
           <h2><label for="quote">Schicht</label></h2>
@@ -56,6 +57,8 @@
     <button id="dbg-energie">+20 Energie</button>
     <button id="dbg-schrott">+50 Schrott</button>
     <button id="dbg-person">+1 Person</button>
+    <button id="dbg-sim">Simulation</button>
+    <pre id="debug-sim" hidden></pre>
   </aside>
 
   <noscript>Die Station braucht JavaScript.</noscript>

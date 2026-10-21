@@ -121,6 +121,8 @@ h2 {
   accent-color: var(--akzent);
 }
 #leute-zahl { color: var(--fg); }
+#leute-zustand { color: var(--fg); }
+#debug-sim { margin: 6px 0 0; max-height: 50vh; overflow: auto; }
 #mitte h2 label { cursor: inherit; }
 
 #log {

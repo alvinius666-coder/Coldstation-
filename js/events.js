@@ -28,6 +28,26 @@ export const ANKUENFTE = [
 ];
 const ANKUNFT_REST = 'Noch jemand kommt durch die Schleuse.';
 
+const UNFAELLE = [
+  'Unfall am Förderband. Eine gequetschte Hand.',
+  'Ein Bohrkopf bricht. Splitter im Gesicht.',
+  'Jemand schläft an der Presse ein.',
+  'Ein Sturz im Schacht. Das Bein ist gebrochen.',
+  'Verbrühung am Reaktorkreislauf.',
+  'Ein Kabel reißt. Verbrennungen am Arm.',
+];
+
+const ABGAENGE = [
+  'Eine Koje ist leer. Jemand ist gegangen.',
+  'Ein Raumanzug fehlt. Und einer von uns.',
+  'Jemand nimmt die Kapsel zur Nachbarstation.',
+  'Am Morgen fehlt einer. Niemand fragt.',
+];
+
+function zufall(liste) {
+  return liste[Math.floor(Math.random() * liste.length)];
+}
+
 export function log(s, text) {
   s.log.unshift({ t: s.zeit.spielMs, text });
   if (s.log.length > CONFIG.logMax) s.log.length = CONFIG.logMax;
@@ -74,6 +94,34 @@ export function quoteGeaendert(s) {
   if (q <= 0.6) einmal(s, 'quoteNiedrig', 'Kurze Schichten. Die Leute sehen dich fragend an.');
 }
 
+const EINGERICHTET = {
+  kantine: 'Die Kantine ist warm. Es riecht nach Algenbrot.',
+  krankenstation: 'Die Krankenstation hat sechs Betten und einen Kasten Verbandszeug.',
+  schule: 'In der Werkschule hängt eine Tafel. Jemand schreibt darauf.',
+};
+
+export const EINRICHTUNG_NAME = {
+  kantine: 'Kantine',
+  krankenstation: 'Krankenstation',
+  schule: 'Werkschule',
+};
+
+export function baubeginn(s, key) {
+  log(s, `Baustelle: ${EINRICHTUNG_NAME[key]}. Es braucht Hände.`);
+}
+
+export function eingerichtet(s, key) {
+  log(s, EINGERICHTET[key]);
+}
+
+export function unfall(s) {
+  log(s, zufall(UNFAELLE));
+}
+
+export function abgang(s) {
+  log(s, zufall(ABGAENGE));
+}
+
 export function tanksStehen(s, stehen) {
   log(s, stehen ? 'Kein Strom. Die Tanks stehen still.' : 'Die Tanks blubbern wieder.');
 }
@@ -113,5 +161,43 @@ export function pruefeAusloeser(s) {
   }
   if (!frei.leute && s.kolonie.leute > 0) {
     frei.leute = true;
+  }
+
+  // Phase 3: die Wand. Oder spätestens nach einiger Zeit, für Vorsichtige.
+  const E = s.kolonie.erschoepfung;
+  if (s.phase === 2) {
+    if (E > CONFIG.erschoepfung.wandAb) {
+      s.phase = 3;
+      log(s, 'Die Leute schleppen sich zur Schicht.');
+    } else if (s.zeit.spielMs >= CONFIG.phase3SpaetestensMs && s.kolonie.leute > 0) {
+      s.phase = 3;
+    }
+  }
+  if (s.phase >= 3 && !frei.kantine) {
+    frei.kantine = true;
+    log(s, 'Der Koch zeigt dir die alte Kantine. Sie ließe sich herrichten.');
+  }
+  if (s.phase >= 3 && !frei.krankenstation && (s.gesehen.ersterUnfall || bauten.kantine)) {
+    frei.krankenstation = true;
+    log(s, 'Die Sanitäterin braucht einen Raum.');
+  }
+  if (!frei.schule && bauten.kantine && bauten.krankenstation) {
+    frei.schule = true;
+    log(s, 'Die Technikerin will den Jungen etwas beibringen. Und den anderen.');
+  }
+  if (E >= CONFIG.erschoepfung.ankunftStopAb && s.notsignal.gesendet) {
+    einmal(s, 'ankunftStop', 'Über Funk: Niemand will mehr hierher.');
+  }
+
+  // Nach dem ersten richtigen Essen sagt die alte Schweißerin etwas.
+  if (bauten.kantine && s.kantineMs >= CONFIG.essenNachMs && !s.gesehen.essen) {
+    const wand = s.gesehen.ersterUnfall || s.gesehen.ersterAbgang;
+    einmal(
+      s,
+      'essen',
+      wand
+        ? 'Die alte Schweißerin, beim Essen: „Mehr Schicht heißt nicht mehr Erz. Es heißt weniger von uns.“'
+        : 'Die alte Schweißerin, beim Essen: „So hat hier noch nie jemand gegessen.“',
+    );
   }
 }

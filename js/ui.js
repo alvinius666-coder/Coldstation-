@@ -1,12 +1,49 @@
 // Oberfläche. Elemente erscheinen erst, wenn sie freigeschaltet sind.
 
 import { CONFIG } from './config.js';
-import { KABINE } from './events.js';
+import { KABINE, EINRICHTUNG_NAME } from './events.js';
 import * as A from './actions.js';
 import { kojen } from './tick.js';
 
 const NAMEN = { energie: 'Energie', schrott: 'Schrott', algen: 'Algen' };
-const JOBS = { schrott: 'Ausschlachten', algen: 'Algentanks', energie: 'Reaktor' };
+const JOBS = {
+  schrott: 'Ausschlachten',
+  algen: 'Algentanks',
+  energie: 'Reaktor',
+  bau: 'Baustelle',
+  ...EINRICHTUNG_NAME,
+};
+
+// Wann eine Jobzeile sichtbar ist.
+function jobSichtbar(s, job) {
+  if (CONFIG.jobs[job]) return true;
+  if (job === 'bau') return Boolean(s.bau) || s.jobs.bau > 0;
+  return s.bauten[job];
+}
+
+// Wie es den Leuten geht, in Worten. Die Zahl E sieht nur der Debug-Modus.
+function zustand(E) {
+  if (E < 0.15) return '';
+  if (E < 0.3) return 'müde';
+  if (E < 0.5) return 'erschöpft';
+  if (E < 0.7) return 'am Ende';
+  return 'brechen ein';
+}
+
+function einrichtungAktion(key) {
+  return {
+    id: key,
+    text: (s) => {
+      if (s.bau?.key !== key) return `${EINRICHTUNG_NAME[key]} bauen`;
+      const anteil = s.bau.fortschritt / CONFIG.einrichtungen[key].arbeit;
+      return `${EINRICHTUNG_NAME[key]}: im Bau, ${Math.floor(anteil * 100)} %`;
+    },
+    sichtbar: (s) => s.frei[key] && !s.bauten[key],
+    kosten: (s) => (s.bau?.key === key ? null : A.einrichtungKosten(key)),
+    gesperrt: (s) => Boolean(s.bau),
+    tun: (s) => A.einrichtungBauen(s, key),
+  };
+}
 
 const AKTIONEN = [
   {
@@ -51,6 +88,7 @@ const AKTIONEN = [
     kosten: A.kojeKosten,
     tun: A.kojeHerrichten,
   },
+  ...Object.keys(CONFIG.einrichtungen).map(einrichtungAktion),
 ];
 
 const VORRAETE = [
@@ -143,7 +181,7 @@ export function initUI(holeSpiel) {
       render(holeSpiel());
     });
     jobListe.appendChild(el);
-    return { job, minus, plus, n: el.querySelector('.n') };
+    return { job, el, minus, plus, n: el.querySelector('.n') };
   });
 
   const regler = $('quote');
@@ -176,12 +214,10 @@ export function render(s) {
     zeige(k.el, def.sichtbar(s));
     if (k.el.hidden) continue;
     k.text.textContent = def.text(s);
-    let gesperrt = false;
-    if (def.kosten) {
-      const kosten = def.kosten(s);
-      k.kosten.textContent = kostenText(kosten);
-      gesperrt = !A.bezahlbar(s, kosten);
-    }
+    let gesperrt = def.gesperrt ? def.gesperrt(s) : false;
+    const kosten = def.kosten ? def.kosten(s) : null;
+    k.kosten.textContent = kosten ? kostenText(kosten) : '';
+    if (kosten && !A.bezahlbar(s, kosten)) gesperrt = true;
     if (def.cooldown) {
       const rest = s.cooldowns[def.cooldown] - s.zeit.spielMs;
       const anteil = rest > 0 ? rest / A.COOLDOWN[def.cooldown] : 0;
@@ -201,12 +237,18 @@ export function render(s) {
   zeige($('leute'), s.frei.leute);
   if (s.frei.leute) {
     const frei = A.ohneAufgabe(s);
+    const wie = zustand(s.kolonie.erschoepfung);
     $('leute-zahl').textContent = `${s.kolonie.leute} / ${kojen(s)}`;
+    $('leute-zustand').textContent = wie ? `· ${wie}` : '';
     $('leute-frei').textContent = frei;
+    zeige($('verletzt-zeile'), s.verletzte.length > 0);
+    $('leute-verletzt').textContent = s.verletzte.length;
     for (const z of jobZeilen) {
+      zeige(z.el, jobSichtbar(s, z.job));
       z.n.textContent = s.jobs[z.job];
       z.minus.disabled = s.jobs[z.job] === 0;
-      z.plus.disabled = frei === 0;
+      const voll = CONFIG.einrichtungen[z.job] && s.jobs[z.job] >= 1;
+      z.plus.disabled = frei === 0 || voll || (z.job === 'bau' && !s.bau);
     }
   }
 

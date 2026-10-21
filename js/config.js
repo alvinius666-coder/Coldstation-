@@ -97,6 +97,59 @@ export const CONFIG = {
   // Schichtregler q.
   quote: { min: 0.5, max: 1.5, schritt: 0.1 },
 
+  // Erschöpfung: ΔE = k · (q − R) pro Tick, E geklemmt auf 0 … 1.
+  // R = rBasis − rSinkt · min(E, eKnick) + rZusammenbruch · max(0, E − eKnick)
+  //     + Summe der besetzten Einrichtungen.
+  // rSinkt: wer erschöpft ist, erholt sich schlechter. Das macht die Wand:
+  // E steigt erst schleichend, dann immer schneller.
+  // rZusammenbruch: jenseits von eKnick brechen Leute zusammen und liegen,
+  // ob der Plan will oder nicht. Bei q = 1,5 pendelt E knapp über 0,7.
+  erschoepfung: {
+    k: 0.00042,
+    rBasis: 1.0,
+    rSinkt: 1.25,
+    eKnick: 0.6,
+    rZusammenbruch: 10,
+    // Hunger oder Kälte wirken wie zusätzliche Schicht.
+    mangelLast: 0.5,
+    // Ab hier beginnt Phase 3 (die Wand).
+    wandAb: 0.3,
+    // Wer geht, ist meist der Erschöpfteste: der Schnitt sinkt etwas.
+    entlastungProAbgang: 0.01,
+    // Ab hier kommt niemand Neues mehr (es spricht sich herum).
+    ankunftStopAb: 0.5,
+  },
+
+  unfall: {
+    abE: 0.5,
+    // Chance pro arbeitender Person und Tick bei E = 1 (linear ab abE).
+    rateProPerson: 0.002,
+    // So lange fällt eine verletzte Person aus.
+    heilMs: 90000,
+    heilMsKrankenstation: 30000,
+  },
+
+  abgang: {
+    abE: 0.7,
+    // Chance pro Tick bei E = 1 (linear ab abE), dass jemand geht.
+    rate: 0.1,
+  },
+
+  // Einrichtungen werden gebaut: Material beim Baubeginn, dann Arbeit.
+  // Arbeit = Summe der Leistung aller Leute auf dem Bau, pro Tick.
+  // Fertig brauchen sie eine Person, sonst wirken sie nicht.
+  // R: Regeneration, S: Solidarität, ausbildung: Leistung · (1 + ausbildung).
+  einrichtungen: {
+    kantine: { kosten: { schrott: 300, algen: 100 }, arbeit: 300, R: 0.3, S: 0.1 },
+    krankenstation: { kosten: { schrott: 500, algen: 100 }, arbeit: 450, R: 0.2, S: 0.1 },
+    schule: { kosten: { schrott: 800, algen: 200 }, arbeit: 700, R: 0.05, S: 0.15, ausbildung: 0.2 },
+  },
+
+  // Wer die Wand nie erreicht, bekommt die Einrichtungen trotzdem angeboten.
+  phase3SpaetestensMs: 13 * 60 * 1000,
+  // So lange muss die Kantine besetzt sein, bis beim Essen jemand etwas sagt.
+  essenNachMs: 20000,
+
   // Startwerte der Kolonie. Ab Block 2/3 in Gebrauch.
   // Ertrag = A · q · (1 − E) · (1 + S),  ΔE = k · (q − R)
   kolonie: {

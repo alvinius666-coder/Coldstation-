@@ -1,7 +1,7 @@
 // Spieleraktionen. Ändern nur den Spielstand, kein DOM.
 
 import { CONFIG } from './config.js';
-import { log, einmal, fund, quoteGeaendert, pruefeAusloeser } from './events.js';
+import { log, einmal, fund, quoteGeaendert, baubeginn, pruefeAusloeser } from './events.js';
 
 export const COOLDOWN = {
   reaktor: CONFIG.reaktor.cooldownMs,
@@ -106,11 +106,14 @@ export function kojeHerrichten(s) {
 }
 
 export function ohneAufgabe(s) {
-  return s.kolonie.leute - Object.values(s.jobs).reduce((a, b) => a + b, 0);
+  return s.kolonie.leute - Object.values(s.jobs).reduce((a, b) => a + b, 0) - s.verletzte.length;
 }
 
 export function jobAendern(s, job, delta) {
   if (delta > 0 && ohneAufgabe(s) < delta) return;
+  // Einrichtungen brauchen genau eine Person.
+  if (delta > 0 && CONFIG.einrichtungen[job] && (!s.bauten[job] || s.jobs[job] + delta > 1)) return;
+  if (delta > 0 && job === 'bau' && !s.bau) return;
   if (delta < 0 && s.jobs[job] < -delta) return;
   s.jobs[job] += delta;
 }
@@ -119,4 +122,18 @@ export function quoteSetzen(s, q) {
   const Q = CONFIG.quote;
   s.kolonie.quote = Math.round(Math.min(Q.max, Math.max(Q.min, q)) * 10) / 10;
   quoteGeaendert(s);
+}
+
+export function einrichtungKosten(key) {
+  return CONFIG.einrichtungen[key].kosten;
+}
+
+// Startet eine Baustelle. Es läuft immer nur eine.
+export function einrichtungBauen(s, key) {
+  const kosten = einrichtungKosten(key);
+  if (s.bauten[key] || s.bau || !s.frei[key] || !bezahlbar(s, kosten)) return;
+  bezahlen(s, kosten);
+  s.bau = { key, fortschritt: 0 };
+  baubeginn(s, key);
+  pruefeAusloeser(s);
 }
