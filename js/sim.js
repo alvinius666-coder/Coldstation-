@@ -7,7 +7,7 @@ import { CONFIG } from './config.js';
 import { neuerSpielstand } from './state.js';
 import { tick, kojen, leistung } from './tick.js';
 import * as A from './actions.js';
-import { liefern } from './guertel.js';
+import { lagerOeffnen } from './guertel.js';
 
 // Zielwerte aus CLAUDE.md (Ertrag pro Tick).
 export const ZIELE = {
@@ -67,8 +67,8 @@ const STRATEGIEN = {
         A.jobAendern(s, key, 1);
       }
     }
-    // Abgeben statt horten: liefern, was geht.
-    for (const key of Object.keys(s.guertel.stationen)) liefern(s, key);
+    // Der Rat bittet um das Lager; das Kollektiv gibt nach.
+    lagerOeffnen(s);
     // Drei Leute auf die Baustelle.
     if (s.bau && s.jobs.bau < 3) {
       frei(s, 3 - s.jobs.bau);

@@ -138,6 +138,18 @@ export const FUNK = {
   okkar: ['Funk aus Okkar, leise: „An den Schleusen stehen Söldner. Bezahlt hat man die auch nicht.“'],
 };
 
+// Der Rat drängt auf Lieferungen. Je Bitte eine Zeile; ignoriert, wird es schärfer.
+export const BITTE = (name) => `Der Rat bittet dich um den Lagerschlüssel. ${name} hungert.`;
+export const DRANG = [
+  ['Der Koch: „Wir haben mehr Algen, als wir essen können.“', 'Der Lader: „Es ist sein Lager. Er hat den Schlüssel.“'],
+  ['Die Frau aus Schacht 2: „Das Lager ist voll, und er sitzt drauf.“', 'Die alte Schweißerin: „Er hat schon einmal entschieden, wer zurückbleibt.“'],
+];
+export const LAGER_GEOEFFNET = 'Du öffnest das Lager.';
+export const RAT_UEBERNIMMT = {
+  ignoriert: 'Der Rat öffnet das Lager. Du wirst nicht gefragt.',
+  mitgemacht: 'Die alte Schweißerin nimmt dir den Schlüssel ab: „Ab jetzt schicken wir selbst.“',
+};
+
 export const OKKAR_STREIK = 'In Okkar legen sie die Arbeit nieder. Die Söldner sehen zu.';
 
 // Entschlüsselte Konzernmemos aus dem Datenkern des Schleppers, in dieser Reihenfolge.
@@ -216,7 +228,7 @@ const DEBATTEN = {
     ['Die Frau aus Schacht 2: „Der Überschuss liegt im Lager. Wem gehört der?“', 'Der Funker: „Wem gehörte er vorher?“'],
     {
       zeilen: ['Der Lader: „Warum schicken wir alles weg?“', 'Die Frau aus Schacht 2: „Damit wir nicht wieder allein sind.“'],
-      wenn: (s) => s.guertel.aktiv,
+      wenn: (s) => s.guertel.ratLiefert,
     },
     {
       zeilen: ['Der Bohrhauer: „Und was machen wir mit ihm?“', 'Die alte Schweißerin: „Er arbeitet. Wie alle.“'],

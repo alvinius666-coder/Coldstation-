@@ -75,6 +75,10 @@ export function neuerSpielstand() {
       naechstesMemo: 0,
       naechsteRatLieferung: 0,
       schlepperZurueck: 0, // Spielzeit, ab der der Schlepper wieder da ist
+      bitte: null, // { key, bis }: der Rat wartet auf den Lagerschlüssel
+      bitten: 0, // so oft hat der Rat schon gebeten
+      naechsteBitte: 0,
+      ratLiefert: false, // der Rat hat das Lager übernommen
     },
     // Das Ende (Phase 6).
     ende: {

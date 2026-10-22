@@ -134,7 +134,8 @@ h2 {
 .station { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin-bottom: 6px; }
 .station .status { color: var(--dim); text-align: right; }
 .station .status.netz { color: var(--fg); }
-.station button { grid-column: 1 / -1; text-align: left; padding: 2px 8px; }
+#lager-bitte { display: flex; flex-direction: column; gap: 6px; margin: 4px 0; }
+#lager-bitte button { align-self: flex-start; }
 #memo-liste { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; }
 #memo-liste li { color: var(--dim); }
 #memo-liste li:last-child { color: var(--fg); }

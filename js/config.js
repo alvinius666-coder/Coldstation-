@@ -194,7 +194,13 @@ export const CONFIG = {
     fahrtMs: 60000,
     // Eine Lieferung: kostet das hier und bringt eine Einheit Hilfe.
     lieferung: { algen: 200, schrott: 400 },
-    // Der Rat schickt selbst, wenn die Vorräte darüber liegen, im Abstand.
+    // Das Lager gehört dem Schichtleiter. Der Rat bittet um Lieferungen:
+    // erste Bitte so lange nach dem Kontakt, dann jeweils so viel Zeit zum Antworten.
+    bitteNachMs: 20000,
+    bitteFristMs: 45000,
+    // Nach so vielen Bitten öffnet der Rat das Lager selbst, egal wie geantwortet wurde.
+    bittenBisRat: 3,
+    // Danach schickt der Rat selbst, wenn die Vorräte darüber liegen, im Abstand.
     ratLiefertAb: { algen: 500, schrott: 1200 },
     ratLieferIntervallMs: 40000,
     // Abstand zwischen zwei entschlüsselten Memos.

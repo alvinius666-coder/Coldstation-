@@ -93,7 +93,7 @@ Alle Figuren sind namenlos und werden über ihre Arbeit benannt. Das ist Absicht
 | 2 Die Zurückgelassenen | 3–10 min | Notsignal mit der Kennung „Förderstation 7“. Leute kommen nacheinander. Jobs verteilen, Schichtregler bis „Doppelschichten. Niemand widerspricht.“ | Mehr Schicht bringt mehr – vorerst. |
 | 3 Die Wand | 10–20 min | Erschöpfung, Unfälle, Abgänge, „Niemand will mehr hierher.“ Kantine und Krankenstation. Beim Essen die alte Schweißerin: „Mehr Schicht heißt nicht mehr Erz. Es heißt weniger von uns.“ | Der Boss-Weg frisst sich selbst. |
 | 4 Der Rat | 20–35 min | „Ab jetzt reden wir mit.“ Befehle werden Vorschläge, der Rat stimmt ab, lehnt Doppelschichten ab, baut selbst. Streitgespräche. | Kontrolle abgeben bringt mehr als Kontrolle. |
-| 5 Der Gürtel | 35–50 min | Schlepper flicken. Kontakt: die Station nennt sich Iskra. Lieferungen befreien Vela, Tamm, Okkar. Datenkern mit Konzernmemos – zuletzt: „Liste erhalten. Gezeichnet: SL-07.“ Die alte Schweißerin legt den Ausdruck vor dich. „Dann geht die Arbeit weiter.“ | Du warst es. Sie wissen es. Sie lassen dich trotzdem arbeiten. |
+| 5 Der Gürtel | 35–50 min | Schlepper flicken. Kontakt: die Station nennt sich Iskra. Das Lager gehört dem Schichtleiter – der Rat bittet um den Schlüssel, drängt („Er hat schon einmal entschieden, wer zurückbleibt.“) und öffnet das Lager nach der dritten Bitte selbst. Lieferungen befreien Vela, Tamm, Okkar. Datenkern mit Konzernmemos – zuletzt: „Liste erhalten. Gezeichnet: SL-07.“ Die alte Schweißerin legt den Ausdruck vor dich. „Dann geht die Arbeit weiter.“ | Du warst es. Sie wissen es. Sie lassen dich trotzdem arbeiten. |
 | 6 Ende | ab ca. 50 min | Konzernschiff mit Rechtstiteln und Söldnern. Der Rat lehnt ab, ohne dich zu fragen. Wahl: **Gehen** (eine Zeile, Iskra arbeitet weiter) oder **Bleiben** (alle Steuerelemente einzeln abgeben, zuletzt das Funkpult). Schlussbild: Netz steigt, Konzern fällt. | Iskra braucht dich nicht. Das ist der Sieg. |
 
 **Die Konzernmemos (Kanon, in Reihenfolge):**
@@ -104,7 +104,9 @@ Alle Figuren sind namenlos und werden über ihre Arbeit benannt. Das ist Absicht
 5. „Auswahl durch die Schichtleitung nach Produktivität. Liste anbei.“
 6. „Liste erhalten. Gezeichnet: SL-07.“
 
-**Motive:** Nummern statt Namen · die Liste · Kälte und Wärme als Gradmesser · Betten (sechs) · der Kreis statt der Bühne · Abgeben statt Horten · Das Schiff im Orbit wartet.
+**Motive:** Nummern statt Namen · die Liste · Kälte und Wärme als Gradmesser · Betten (sechs) · der Kreis statt der Bühne · Abgeben statt Horten · der Lagerschlüssel · Das Schiff im Orbit wartet.
+
+**Grundsatz:** Der Schichtleiter gibt nie freiwillig ab. Jede Kontrolle wird ihm abgerungen – erst als Bitte, dann als Druck, dann nimmt der Rat sie sich. Mitmachen beschleunigt das nur.
 
 ---
 

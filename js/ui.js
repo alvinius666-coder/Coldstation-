@@ -2,7 +2,7 @@
 
 import { CONFIG } from './config.js';
 import { KABINE, EINRICHTUNG_NAME, MEMOS } from './events.js';
-import { liefern, kannLiefern, lieferKosten, schlepperDa } from './guertel.js';
+import { lagerOeffnen, kannLiefern, lieferKosten, schlepperDa } from './guertel.js';
 import { abgegeben, wahlOffen, waehlen, naechsteAbgaben, abgeben, schlussbild, STEUER } from './ende.js';
 import { UEBERGABE } from './events.js';
 import { stationsBild, karte, SCHIFF } from './bild.js';
@@ -231,14 +231,14 @@ export function initUI(holeSpiel) {
   stationZeilen = Object.entries(CONFIG.guertel.stationen).map(([key, def]) => {
     const el = document.createElement('div');
     el.className = 'station';
-    el.innerHTML = `<span>${def.name}</span><span class="status"></span><button>Lieferung schicken</button>`;
-    const knopf = el.querySelector('button');
-    knopf.addEventListener('click', () => {
-      liefern(holeSpiel(), key);
-      render(holeSpiel());
-    });
+    el.innerHTML = `<span>${def.name}</span><span class="status"></span>`;
     $('stationen').appendChild(el);
-    return { key, def, status: el.querySelector('.status'), knopf };
+    return { key, def, status: el.querySelector('.status') };
+  });
+
+  $('lager-oeffnen').addEventListener('click', () => {
+    lagerOeffnen(holeSpiel());
+    render(holeSpiel());
   });
 
   const regler = $('quote');
@@ -403,15 +403,23 @@ function renderGuertel(s) {
   $('konzern-wert').textContent = `${CONFIG.konzern.name} ${zahl(s.konzern.ertrag, 1)}`;
   const rest = Math.ceil((s.guertel.schlepperZurueck - s.zeit.spielMs) / 1000);
   $('schlepper-status').textContent = schlepperDa(s) ? 'Der Schlepper liegt im Hangar.' : `Der Schlepper ist unterwegs, noch ${rest} s.`;
-  $('liefer-kosten').textContent = `Eine Lieferung: ${kostenText(lieferKosten())}`;
   for (const z of stationZeilen) {
     const st = s.guertel.stationen[z.key];
     const hilfe = st.status === 'streik' ? `, ${st.hilfe} / ${z.def.bedarf} Lieferungen` : '';
     z.status.textContent = STATUS[st.status] + hilfe;
     z.status.classList.toggle('netz', st.status === 'netz' || st.status === 'kollektiv');
-    z.knopf.hidden = st.status !== 'streik' || abgegeben(s, 'lieferung');
-    z.knopf.disabled = !kannLiefern(s);
   }
+  // Das Lager: erst bittet der Rat, dann verwaltet er es selbst.
+  const g = s.guertel;
+  const bitte = g.bitte && !g.ratLiefert;
+  zeige($('lager-bitte'), Boolean(bitte));
+  if (bitte) {
+    const name = CONFIG.guertel.stationen[g.bitte.key].name;
+    const rest = Math.max(0, Math.ceil((g.bitte.bis - s.zeit.spielMs) / 1000));
+    $('lager-text').textContent = `Der Rat wartet auf den Schlüssel. Lieferung nach ${name} (${kostenText(lieferKosten())}), noch ${rest} s.`;
+    $('lager-oeffnen').disabled = !kannLiefern(s);
+  }
+  $('liefer-kosten').textContent = g.ratLiefert ? 'Das Lager verwaltet der Rat.' : 'Das Lager ist verschlossen. Du hast den Schlüssel.';
   if (s.guertel.memos !== letzteMemos) {
     letzteMemos = s.guertel.memos;
     $('memo-liste').replaceChildren(

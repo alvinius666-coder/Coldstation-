@@ -2,7 +2,7 @@
 // Dazu die Konzernstation als Gegenprobe, die ab Spielstart mitläuft. Kein DOM.
 
 import { CONFIG } from './config.js';
-import { log, einmal, FUNK, OKKAR_STREIK, MEMOS, NACH_DER_LISTE } from './events.js';
+import { log, einmal, FUNK, OKKAR_STREIK, MEMOS, NACH_DER_LISTE, BITTE, DRANG, LAGER_GEOEFFNET, RAT_UEBERNIMMT } from './events.js';
 import { regeneration } from './tick.js';
 
 export function befreit(st) {
@@ -34,7 +34,7 @@ function funk(s, key) {
   for (const zeile of FUNK[key]) log(s, zeile);
 }
 
-// Eine Lieferung an eine streikende Station. Abgeben ist kein Vorschlag.
+// Eine Lieferung an eine streikende Station. Erst auf Bitte des Rats, später durch ihn.
 export function liefern(s, key, vomRat = false) {
   const st = s.guertel.stationen[key];
   if (!s.guertel.aktiv || st.status !== 'streik' || !kannLiefern(s)) return false;
@@ -77,6 +77,7 @@ export function guertelOeffnen(s) {
   g.aktiv = true;
   g.naechstesMemo = s.zeit.spielMs + CONFIG.guertel.memoIntervallMs / 2;
   g.naechsteRatLieferung = s.zeit.spielMs + CONFIG.guertel.ratLieferIntervallMs;
+  g.naechsteBitte = s.zeit.spielMs + CONFIG.guertel.bitteNachMs;
   s.teil2.industrie.schlepper = true;
   s.teil2.buendnisse = Object.keys(g.stationen).filter((k) => befreit(g.stationen[k]));
   log(s, 'Im Schlepper liegt ein Datenkern der Konzernflotte. Der Funker macht sich daran.');
@@ -98,11 +99,63 @@ function memos(s) {
   }
 }
 
+function erstesStreikziel(s) {
+  return Object.keys(s.guertel.stationen).find((k) => s.guertel.stationen[k].status === 'streik');
+}
+
+// Der Rat nimmt dem Schichtleiter das Lager ab.
+function ratUebernimmt(s, mitgemacht) {
+  const g = s.guertel;
+  g.ratLiefert = true;
+  g.bitte = null;
+  g.naechsteRatLieferung = s.zeit.spielMs;
+  if (!s.ende.abgegeben.includes('lieferung')) s.ende.abgegeben.push('lieferung');
+  log(s, mitgemacht ? RAT_UEBERNIMMT.mitgemacht : RAT_UEBERNIMMT.ignoriert);
+}
+
+// Der Rat bittet um den Lagerschlüssel. Ignoriert, drängt er; nach einigen Bitten übernimmt er.
+function bitten(s) {
+  const G = CONFIG.guertel;
+  const g = s.guertel;
+  const jetzt = s.zeit.spielMs;
+  if (g.bitte && jetzt >= g.bitte.bis) {
+    g.bitte = null;
+    if (g.bitten <= DRANG.length) for (const zeile of DRANG[g.bitten - 1]) log(s, zeile);
+    if (g.bitten >= G.bittenBisRat) {
+      ratUebernimmt(s, false);
+      return;
+    }
+    g.naechsteBitte = jetzt;
+  }
+  if (!g.bitte && jetzt >= g.naechsteBitte) {
+    const key = erstesStreikziel(s);
+    if (!key) return;
+    g.bitten++;
+    g.bitte = { key, bis: jetzt + G.bitteFristMs };
+    log(s, BITTE(G.stationen[key].name));
+  }
+}
+
+// Der Schichtleiter gibt nach: eine Lieferung an die Station, um die gebeten wurde.
+export function lagerOeffnen(s) {
+  const g = s.guertel;
+  if (!g.bitte || g.ratLiefert) return false;
+  const key = g.bitte.key;
+  if (s.guertel.stationen[key].status !== 'streik') g.bitte.key = erstesStreikziel(s) ?? key;
+  if (!kannLiefern(s)) return false;
+  log(s, LAGER_GEOEFFNET);
+  liefern(s, g.bitte.key);
+  g.bitte = null;
+  if (g.bitten >= CONFIG.guertel.bittenBisRat) ratUebernimmt(s, true);
+  else g.naechsteBitte = s.zeit.spielMs + CONFIG.guertel.bitteNachMs;
+  return true;
+}
+
 // Der Rat gibt Überschuss ab, an die Station, die am längsten wartet.
 function ratLiefert(s) {
   const G = CONFIG.guertel;
   const g = s.guertel;
-  if (!s.rat.aktiv || s.zeit.spielMs < g.naechsteRatLieferung) return;
+  if (!g.ratLiefert || s.zeit.spielMs < g.naechsteRatLieferung) return;
   g.naechsteRatLieferung = s.zeit.spielMs + G.ratLieferIntervallMs;
   const ueberschuss = Object.entries(G.ratLiefertAb).every(([r, n]) => s.res[r] >= n);
   if (!ueberschuss) return;
@@ -113,7 +166,8 @@ function ratLiefert(s) {
 export function guertelTick(s) {
   if (!s.guertel.aktiv) return;
   memos(s);
-  ratLiefert(s);
+  if (s.guertel.ratLiefert) ratLiefert(s);
+  else bitten(s);
   const f = 1 + s.kolonie.solidaritaet;
   let netz = s.ertrag;
   for (const [key, st] of Object.entries(s.guertel.stationen)) {
