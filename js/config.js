@@ -40,6 +40,8 @@ export const CONFIG = {
     cooldownMs: 4000,
     // Chance pro Sammeln auf einen Fund (einzeiliges Ereignis).
     fundChance: 0.15,
+    // Ab diesem Sammeln kommt der zerknitterte Ausdruck sicher (noch in Phase 1).
+    ausdruckSpaetestensKlick: 10,
   },
 
   algentank: {

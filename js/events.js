@@ -6,12 +6,18 @@ import { guertelOeffnen } from './guertel.js';
 
 export const KABINE = ['eiskalt', 'kalt', 'kühl', 'warm'];
 
-// Funde beim Schrottsammeln. Jeder kommt höchstens einmal.
+// Funde beim Schrottsammeln. Jeder kommt höchstens einmal, in zufälliger Reihenfolge.
+// Ein Fund kann mehrere Zeilen haben. nichtZuerst: kommt nie als erster Fund.
+export const AUSDRUCK = 4; // Index des zerknitterten Ausdrucks in FUNDE
 export const FUNDE = [
   'Ein Helm. Statt eines Namens eine Nummer.',
   'Eine Thermoskanne, noch halb voll. Jemand ist in Eile gegangen.',
   'Ein Dienstplan. Die Spalte „Schichtleitung“ ist abgerissen.',
   'Eine Quotentafel. Die letzte Woche rot unterstrichen.',
+  {
+    zeilen: ['Ein zerknitterter Ausdruck. Konzernkopf.', '„…SL-07 wird nicht übernom… Verbleibt vor…“', 'Der Rest ist nass.'],
+    nichtZuerst: true,
+  },
 ];
 
 // Ankünfte nach dem Notsignal, in dieser Reihenfolge. Danach ANKUNFT_REST.
@@ -268,11 +274,15 @@ export function tanksStehen(s, stehen) {
   log(s, stehen ? 'Kein Strom. Die Tanks stehen still.' : 'Die Tanks blubbern wieder.');
 }
 
-export function fund(s) {
-  const offen = FUNDE.filter((_, i) => !s.gesehen['fund' + i]);
+// sicher: ein Fund kommt bestimmt; ist schon einer gefunden, dann ein nichtZuerst-Fund.
+export function fund(s, sicher = false) {
+  const ersterFund = !FUNDE.some((_, i) => s.gesehen['fund' + i]);
+  let offen = FUNDE.map((_, i) => i).filter((i) => !s.gesehen['fund' + i] && !(ersterFund && FUNDE[i].nichtZuerst));
+  if (sicher && !ersterFund) offen = offen.filter((i) => FUNDE[i].nichtZuerst);
   if (offen.length === 0) return;
-  const text = offen[Math.floor(Math.random() * offen.length)];
-  einmal(s, 'fund' + FUNDE.indexOf(text), text);
+  const i = offen[Math.floor(Math.random() * offen.length)];
+  s.gesehen['fund' + i] = true;
+  for (const zeile of FUNDE[i].zeilen ?? [FUNDE[i]]) log(s, zeile);
 }
 
 // Nach jedem Tick und jeder Aktion: was ist neu sichtbar?

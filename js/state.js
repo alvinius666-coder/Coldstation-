@@ -61,6 +61,7 @@ export function neuerSpielstand() {
     raten: { energie: 0, schrott: 0, algen: 0 }, // Nettoänderung im letzten Tick
     tanksStehen: false,
     cooldowns: { reaktor: 0, schrott: 0 }, // Spielzeit, ab der wieder bereit
+    schrottKlicks: 0,
     gesehen: {}, // einmalige Ereignisse
     log: [],
     logNr: 0,

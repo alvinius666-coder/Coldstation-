@@ -1,7 +1,7 @@
 // Spieleraktionen. Ändern nur den Spielstand, kein DOM.
 
 import { CONFIG } from './config.js';
-import { log, einmal, fund, quoteGeaendert, baubeginn, EINRICHTUNG_NAME, pruefeAusloeser } from './events.js';
+import { log, einmal, fund, AUSDRUCK, quoteGeaendert, baubeginn, EINRICHTUNG_NAME, pruefeAusloeser } from './events.js';
 import { vorschlagen } from './rat.js';
 
 export const COOLDOWN = {
@@ -51,8 +51,11 @@ export function schrottSammeln(s) {
   if (!bereit(s, 'schrott')) return;
   s.res.schrott += CONFIG.schrott.klickMenge;
   starteCooldown(s, 'schrott');
-  if (!einmal(s, 'ersterSchrott', 'Kabelreste, Blech. Brauchbar.') && Math.random() < CONFIG.schrott.fundChance) {
-    fund(s);
+  s.schrottKlicks++;
+  const ausdruckFaellig = !s.gesehen['fund' + AUSDRUCK] && s.schrottKlicks >= CONFIG.schrott.ausdruckSpaetestensKlick;
+  if (!einmal(s, 'ersterSchrott', 'Kabelreste, Blech. Brauchbar.')) {
+    if (ausdruckFaellig) fund(s, true);
+    else if (Math.random() < CONFIG.schrott.fundChance) fund(s);
   }
   pruefeAusloeser(s);
 }
@@ -81,7 +84,7 @@ export function notsignalKosten() {
 
 export function notsignalSenden(s) {
   const kosten = notsignalKosten();
-  if (s.notsignal.gesendet || !bezahlbar(s, kosten)) return;
+  if (!s.frei.notsignal || s.notsignal.gesendet || !bezahlbar(s, kosten)) return;
   bezahlen(s, kosten);
   s.notsignal.gesendet = true;
   s.notsignal.naechsteAnkunft = s.zeit.spielMs + CONFIG.leute.ersteAnkunftMs;
