@@ -2,7 +2,7 @@
 // Dazu die Konzernstation als Gegenprobe, die ab Spielstart mitläuft. Kein DOM.
 
 import { CONFIG } from './config.js';
-import { log, einmal, FUNK, OKKAR_STREIK, MEMOS, NACH_DER_LISTE, BITTE, DRANG, LAGER_GEOEFFNET, RAT_UEBERNIMMT } from './events.js';
+import { log, einmal, AUREL, FUNK, OKKAR_STREIK, MEMOS, NACH_DER_LISTE, BITTE, DRANG, LAGER_GEOEFFNET, RAT_UEBERNIMMT } from './events.js';
 import { regeneration } from './tick.js';
 
 export function befreit(st) {
@@ -175,6 +175,18 @@ export function guertelTick(s) {
   }
   s.guertel.netzErtrag = netz;
   einmal(s, 'konzernSichtbar', `Auf dem Schirm: Konzernstation ${CONFIG.konzern.name}. Ihre Zahlen kommen offen rein.`);
+  aurelBeobachten(s);
+}
+
+// Was die Station an Aurel sieht: erst den Ort, dann den Bestand, der schwindet.
+function aurelBeobachten(s) {
+  const k = s.konzern;
+  einmal(s, 'aurelErkannt', AUREL.erkannt);
+  if (k.leuteSichtbar === null) k.leuteSichtbar = k.leute;
+  for (const n of CONFIG.konzern.bestandMeldungen) {
+    if (k.leuteSichtbar > n && k.leute <= n) einmal(s, `aurelBestand${n}`, AUREL.bestand(n));
+  }
+  if (k.leute < k.leuteSichtbar) einmal(s, 'aurelSinkt', AUREL.sinkt);
 }
 
 // Gegenprobe: Ertrag = A · q · (1 − E), ΔE = k · (q − R), ohne Einrichtungen.

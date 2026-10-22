@@ -93,7 +93,13 @@ export function neuerSpielstand() {
       sZuwachs: 0, // Solidarität, die im Schlussbild ohne Zutun wächst
     },
     // Gegenprobe, sichtbar ab Phase 5.
-    konzern: { leute: CONFIG.konzern.leute, quote: CONFIG.konzern.quote, erschoepfung: 0, ertrag: 0 },
+    konzern: {
+      leute: CONFIG.konzern.leute,
+      quote: CONFIG.konzern.quote,
+      erschoepfung: 0,
+      ertrag: 0,
+      leuteSichtbar: null, // Bestand, als Aurel zum ersten Mal auf dem Schirm war
+    },
     // Haken für Teil 2.
     teil2: {
       miliz: 0,

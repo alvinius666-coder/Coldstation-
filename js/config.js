@@ -241,6 +241,8 @@ export const CONFIG = {
     leute: 40,
     quote: 1.5,
     abgangRate: 0.03,
+    // Konzernmeldungen, sobald Aurels Bestand (Leute) diese Werte erreicht. Je einmal.
+    bestandMeldungen: [37, 31],
   },
 
   rat: {

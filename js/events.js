@@ -156,6 +156,13 @@ export const RAT_UEBERNIMMT = {
   mitgemacht: 'Die alte Schweißerin nimmt dir den Schlüssel ab: „Ab jetzt schicken wir selbst.“',
 };
 
+// Aurel: dorthin ist das Shuttle mit den 40 geflogen. Gesagt wird es nicht.
+export const AUREL = {
+  erkannt: 'Der Funker hört Aurel ab. „Da ist das Shuttle damals hin.“',
+  sinkt: 'Der Lader sieht auf Aurels Zahlen. Er sagt nichts.',
+  bestand: (n) => `Aurel meldet: Bestand ${n}.`,
+};
+
 export const OKKAR_STREIK = 'In Okkar legen sie die Arbeit nieder. Die Söldner sehen zu.';
 
 // Entschlüsselte Konzernmemos aus dem Datenkern des Schleppers, in dieser Reihenfolge.
