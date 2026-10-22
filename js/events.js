@@ -183,6 +183,7 @@ export const UEBERGABE = {
   lieferung: ['Lieferungen abgeben', 'Der Schlepper fährt, wenn jemand ruft. Dazu braucht es dich nicht.'],
   funk: ['Funkpult abgeben', 'Du stehst vom Funkpult auf und setzt dich zu den anderen an den Tisch.'],
 };
+export const STEUER = Object.keys(UEBERGABE);
 
 // Streitgespräche im Rat: zwei Stimmen, je eine Zeile. Nach Anlass sortiert.
 // Statt der zwei Zeilen geht auch { zeilen, wenn }: nur, solange wenn(s) gilt.

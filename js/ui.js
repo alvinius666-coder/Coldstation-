@@ -5,6 +5,7 @@ import { KABINE, EINRICHTUNG_NAME, MEMOS } from './events.js';
 import { liefern, kannLiefern, lieferKosten, schlepperDa } from './guertel.js';
 import { abgegeben, wahlOffen, waehlen, naechsteAbgaben, abgeben, schlussbild, STEUER } from './ende.js';
 import { UEBERGABE } from './events.js';
+import { stationsBild, karte, SCHIFF } from './bild.js';
 import * as A from './actions.js';
 import { kojen } from './tick.js';
 
@@ -280,22 +281,32 @@ export function zuruecksetzen() {
   $('uebergabe').hidden = true;
   $('schluss').hidden = true;
   for (const id of ['ort', 'ertrag', 'spalten']) $(id).hidden = false;
+  $('bild').hidden = true;
   $('ertrag').hidden = true;
   letzteMemos = -1;
 }
 
+// Text nur setzen, wenn er sich geändert hat.
+function setzeText(el, text) {
+  if (el.textContent !== text) el.textContent = text;
+}
+
 function renderSchluss(s) {
+  setzeText($('schiff'), SCHIFF);
   $('schluss-netz').textContent = zahl(s.guertel.netzErtrag, 1);
   $('schluss-konzern').textContent = zahl(s.konzern.ertrag, 1);
 }
 
 export function render(s) {
   if (schlussbild(s)) {
-    for (const id of ['ort', 'ertrag', 'spalten']) $(id).hidden = true;
+    for (const id of ['ort', 'ertrag', 'spalten', 'bild']) $(id).hidden = true;
     zeige($('schluss'), true);
     renderSchluss(s);
     return;
   }
+  zeige($('bild'), s.frei.vorraete);
+  if (s.frei.vorraete) setzeText($('bild'), stationsBild(s));
+
   const wahl = wahlOffen(s);
   zeige($('wahl'), wahl);
   zeige($('uebergabe'), s.ende.wahl === 'bleiben' && naechsteAbgaben(s).length > 0);
@@ -387,6 +398,7 @@ export function render(s) {
 }
 
 function renderGuertel(s) {
+  setzeText($('karte'), karte(s));
   $('netz-wert').textContent = zahl(s.guertel.netzErtrag, 1);
   $('konzern-wert').textContent = `${CONFIG.konzern.name} ${zahl(s.konzern.ertrag, 1)}`;
   const rest = Math.ceil((s.guertel.schlepperZurueck - s.zeit.spielMs) / 1000);

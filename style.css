@@ -156,6 +156,18 @@ h2 {
 #schluss-netz { color: var(--akzent); }
 #schluss-konzern { color: var(--dim); }
 #schluss p { flex-basis: 100%; margin: 0; }
+/* ASCII-Grafiken: eigener Scrollbereich, damit die Seite nie seitlich scrollt. */
+.ascii {
+  margin: 0;
+  font: 12px/1.25 ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  color: var(--dim);
+  white-space: pre;
+  overflow-x: auto;
+  max-width: 100%;
+}
+#bild { margin-bottom: 24px; }
+#karte { margin-bottom: 6px; font-size: 11px; }
+#schiff { flex-basis: 100%; display: flex; justify-content: center; color: var(--fg); }
 #debug-sim { margin: 6px 0 0; max-height: 50vh; overflow: auto; }
 #mitte h2 label { cursor: inherit; }
 
@@ -212,7 +224,10 @@ footer {
 #debug pre { margin: 0 0 6px; }
 #debug button { font-size: 11px; padding: 2px 6px; }
 
+#ertrag .gross { white-space: nowrap; }
+
 @media (max-width: 720px) {
+  #netz-zahlen { margin-left: 0; flex-wrap: wrap; }
   #spalten { grid-template-columns: 1fr; gap: 24px; }
   #aktionen { max-width: 280px; }
 }

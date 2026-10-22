@@ -2,10 +2,10 @@
 // Steuerelemente abgeben, Schlussbild. Kein DOM.
 
 import { CONFIG } from './config.js';
-import { log, ENDE_SZENE, GEHEN, UEBERGABE } from './events.js';
+import { log, ENDE_SZENE, GEHEN, UEBERGABE, STEUER } from './events.js';
 import { leistung } from './tick.js';
 
-export const STEUER = Object.keys(UEBERGABE);
+export { STEUER };
 
 export function abgegeben(s, key) {
   return s.ende.abgegeben.includes(key);
