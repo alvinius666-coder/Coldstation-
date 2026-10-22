@@ -2,7 +2,11 @@
 
 Incremental-Spiel im Browser. Plan und Regeln: [CLAUDE.md](CLAUDE.md), [docs/bauplan.md](docs/bauplan.md).
 
-## Starten
+## Spielen
+
+Online: <https://alvinius666-coder.github.io/Coldstation-/>
+
+## Lokal starten
 
 Das Spiel nutzt ES-Module und braucht deshalb einen lokalen Server (Doppelklick auf `index.html` reicht nicht):
 
