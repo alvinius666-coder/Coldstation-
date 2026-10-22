@@ -75,6 +75,17 @@ export function neuerSpielstand() {
       naechsteRatLieferung: 0,
       schlepperZurueck: 0, // Spielzeit, ab der der Schlepper wieder da ist
     },
+    // Das Ende (Phase 6).
+    ende: {
+      aktiv: false,
+      zeile: 0, // so viele Zeilen der Schlussszene sind gelaufen
+      naechsteZeile: 0,
+      wahl: null, // 'gehen' | 'bleiben'
+      abgegeben: [], // Steuerelemente, die der Rat übernommen hat
+      schlussAb: 0, // Spielzeit, ab der das Schlussbild steht (0 = noch nicht)
+      naechsterKonzernAbgang: 0,
+      sZuwachs: 0, // Solidarität, die im Schlussbild ohne Zutun wächst
+    },
     // Gegenprobe, sichtbar ab Phase 5.
     konzern: { leute: CONFIG.konzern.leute, quote: CONFIG.konzern.quote, erschoepfung: 0, ertrag: 0 },
     // Haken für Teil 2.

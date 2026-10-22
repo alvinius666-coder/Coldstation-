@@ -138,6 +138,24 @@ h2 {
 #memo-liste { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; }
 #memo-liste li { color: var(--dim); }
 #memo-liste li:last-child { color: var(--fg); }
+#wahl, #uebergabe { display: flex; flex-direction: column; gap: 10px; }
+#wahl button { padding: 10px; font-size: 1.1em; }
+#uebergabe button { text-align: left; }
+#schluss {
+  min-height: 70vh;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 48px 96px;
+  text-align: center;
+}
+#schluss .zahl { display: flex; flex-direction: column; gap: 8px; }
+#schluss .label { color: var(--dim); }
+#schluss-netz, #schluss-konzern { font-size: 3.6em; font-variant-numeric: tabular-nums; }
+#schluss-netz { color: var(--akzent); }
+#schluss-konzern { color: var(--dim); }
+#schluss p { flex-basis: 100%; margin: 0; }
 #debug-sim { margin: 6px 0 0; max-height: 50vh; overflow: auto; }
 #mitte h2 label { cursor: inherit; }
 

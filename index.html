@@ -21,7 +21,13 @@
     </section>
 
     <div id="spalten">
-      <section id="aktionen"></section>
+      <section id="aktionen">
+        <div id="wahl" hidden>
+          <button id="gehen">Gehen</button>
+          <button id="bleiben">Bleiben</button>
+        </div>
+        <div id="uebergabe" hidden></div>
+      </section>
       <div id="mitte">
         <section id="vorraete" hidden>
           <h2>Vorräte</h2>
@@ -58,6 +64,11 @@
       </div>
       <ul id="log"></ul>
     </div>
+    <section id="schluss" hidden>
+      <div class="zahl"><span class="label">Netz</span><span id="schluss-netz"></span></div>
+      <div class="zahl"><span class="label">Konzern</span><span id="schluss-konzern"></span></div>
+      <p class="leise">Im Orbit wartet ein Schiff.</p>
+    </section>
   </main>
 
   <footer>

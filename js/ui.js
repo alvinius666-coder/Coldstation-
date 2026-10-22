@@ -3,6 +3,8 @@
 import { CONFIG } from './config.js';
 import { KABINE, EINRICHTUNG_NAME, MEMOS } from './events.js';
 import { liefern, kannLiefern, lieferKosten, schlepperDa } from './guertel.js';
+import { abgegeben, wahlOffen, waehlen, naechsteAbgaben, abgeben, schlussbild, STEUER } from './ende.js';
+import { UEBERGABE } from './events.js';
 import * as A from './actions.js';
 import { kojen } from './tick.js';
 
@@ -49,6 +51,7 @@ function einrichtungAktion(key) {
     kosten: (s) => (s.bau?.key === key ? null : A.einrichtungKosten(key)),
     gesperrt: (s) => Boolean(s.bau) || Boolean(s.rat.vorschlag),
     tun: (s) => A.einrichtungBauen(s, key),
+    steuer: 'bauen',
   };
 }
 
@@ -59,6 +62,7 @@ const AKTIONEN = [
     sichtbar: () => true,
     cooldown: 'reaktor',
     tun: A.reaktorAnwerfen,
+    steuer: 'reaktor',
   },
   {
     id: 'schrott',
@@ -66,6 +70,7 @@ const AKTIONEN = [
     sichtbar: (s) => s.frei.schrott,
     cooldown: 'schrott',
     tun: A.schrottSammeln,
+    steuer: 'schrott',
   },
   {
     id: 'algentank',
@@ -73,6 +78,7 @@ const AKTIONEN = [
     sichtbar: (s) => s.frei.algentank && s.bauten.algentank < CONFIG.algentank.max,
     kosten: A.algentankKosten,
     tun: A.algentankReparieren,
+    steuer: 'bauen',
   },
   {
     id: 'reaktorFlicken',
@@ -80,6 +86,7 @@ const AKTIONEN = [
     sichtbar: (s) => s.frei.reaktorReparatur && !s.bauten.reaktorRepariert,
     kosten: A.reaktorKosten,
     tun: A.reaktorFlicken,
+    steuer: 'bauen',
   },
   {
     id: 'notsignal',
@@ -87,6 +94,7 @@ const AKTIONEN = [
     sichtbar: (s) => s.frei.notsignal && !s.notsignal.gesendet,
     kosten: A.notsignalKosten,
     tun: A.notsignalSenden,
+    steuer: 'bauen',
   },
   {
     id: 'koje',
@@ -95,6 +103,7 @@ const AKTIONEN = [
     kosten: A.kojeKosten,
     gesperrt: (s) => Boolean(s.rat.vorschlag),
     tun: A.kojeHerrichten,
+    steuer: 'bauen',
   },
   ...Object.keys(CONFIG.einrichtungen)
     .filter((key) => !CONFIG.einrichtungen[key].nurRat)
@@ -146,6 +155,7 @@ let knoepfe = [];
 let zeilen = [];
 let jobZeilen = [];
 let stationZeilen = [];
+let uebergabeKnoepfe = [];
 let letzteMemos = -1;
 
 const STATUS = { kollektiv: 'kollektiv', netz: 'im Netz', streik: 'im Streik', konzern: 'Konzernsicherheit' };
@@ -153,6 +163,25 @@ let letzteLogNr = -1;
 
 export function initUI(holeSpiel) {
   const box = $('aktionen');
+  $('gehen').addEventListener('click', () => {
+    waehlen(holeSpiel(), 'gehen');
+    render(holeSpiel());
+  });
+  $('bleiben').addEventListener('click', () => {
+    waehlen(holeSpiel(), 'bleiben');
+    render(holeSpiel());
+  });
+  uebergabeKnoepfe = STEUER.map((key) => {
+    const el = document.createElement('button');
+    el.textContent = UEBERGABE[key][0];
+    el.hidden = true;
+    el.addEventListener('click', () => {
+      abgeben(holeSpiel(), key);
+      render(holeSpiel());
+    });
+    $('uebergabe').appendChild(el);
+    return { key, el };
+  });
   knoepfe = AKTIONEN.map((def) => {
     const el = document.createElement('button');
     el.className = 'aktion';
@@ -247,16 +276,38 @@ export function zuruecksetzen() {
   $('guertel').hidden = true;
   $('archiv').hidden = true;
   $('netz-zahlen').hidden = true;
+  $('wahl').hidden = true;
+  $('uebergabe').hidden = true;
+  $('schluss').hidden = true;
+  for (const id of ['ort', 'ertrag', 'spalten']) $(id).hidden = false;
+  $('ertrag').hidden = true;
   letzteMemos = -1;
 }
 
+function renderSchluss(s) {
+  $('schluss-netz').textContent = zahl(s.guertel.netzErtrag, 1);
+  $('schluss-konzern').textContent = zahl(s.konzern.ertrag, 1);
+}
+
 export function render(s) {
+  if (schlussbild(s)) {
+    for (const id of ['ort', 'ertrag', 'spalten']) $(id).hidden = true;
+    zeige($('schluss'), true);
+    renderSchluss(s);
+    return;
+  }
+  const wahl = wahlOffen(s);
+  zeige($('wahl'), wahl);
+  zeige($('uebergabe'), s.ende.wahl === 'bleiben' && naechsteAbgaben(s).length > 0);
+  const moeglich = naechsteAbgaben(s);
+  for (const u of uebergabeKnoepfe) zeige(u.el, moeglich.includes(u.key));
+
   $('ort-name').textContent = s.kolonie.leute > 0 ? 'Station' : 'Kabine';
   $('temp').textContent = KABINE[s.kabine];
 
   for (const k of knoepfe) {
     const { def } = k;
-    zeige(k.el, def.sichtbar(s));
+    zeige(k.el, def.sichtbar(s) && !wahl && !abgegeben(s, def.steuer));
     if (k.el.hidden) continue;
     k.text.textContent = def.text(s);
     let gesperrt = def.gesperrt ? def.gesperrt(s) : false;
@@ -291,6 +342,8 @@ export function render(s) {
     for (const z of jobZeilen) {
       zeige(z.el, jobSichtbar(s, z.job));
       z.n.textContent = s.jobs[z.job];
+      z.minus.hidden = abgegeben(s, 'jobs');
+      z.plus.hidden = abgegeben(s, 'jobs');
       z.minus.disabled = s.jobs[z.job] === 0;
       const voll = CONFIG.einrichtungen[z.job] && s.jobs[z.job] >= 1;
       z.plus.disabled = frei === 0 || voll || (z.job === 'bau' && !s.bau);
@@ -300,6 +353,7 @@ export function render(s) {
   zeige($('schicht'), s.frei.leute);
   if (s.frei.leute) {
     const regler = $('quote');
+    regler.hidden = abgegeben(s, 'schicht');
     const ziehtGerade = document.activeElement === regler;
     if (!ziehtGerade) regler.value = s.kolonie.quote;
     regler.disabled = Boolean(s.rat.vorschlag);
@@ -343,7 +397,7 @@ function renderGuertel(s) {
     const hilfe = st.status === 'streik' ? `, ${st.hilfe} / ${z.def.bedarf} Lieferungen` : '';
     z.status.textContent = STATUS[st.status] + hilfe;
     z.status.classList.toggle('netz', st.status === 'netz' || st.status === 'kollektiv');
-    z.knopf.hidden = st.status !== 'streik';
+    z.knopf.hidden = st.status !== 'streik' || abgegeben(s, 'lieferung');
     z.knopf.disabled = !kannLiefern(s);
   }
   if (s.guertel.memos !== letzteMemos) {

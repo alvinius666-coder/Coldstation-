@@ -107,6 +107,6 @@ Offene Frage: Spielstand übernehmen oder Teil 2 mit festen Werten starten? Bis 
 - [x] **Block 3 – Erschöpfung und Wand:** Formeln, Unfälle, Abgänge, Einrichtungen, Simulationsfunktion. *Ergebnis:* Kipppunkt nach rund 20 Minuten. *Abbruchpunkt:* versteht ein Testspieler den Zusammenhang selbst?
 - [x] **Block 4 – Rat:** Vorschläge, Abstimmungen, eigenständige Bauten, Streitgespräche. *Ergebnis:* Kollektiv überholt sichtbar. *Abbruchpunkt:* fühlt sich Kontrollverlust gut an statt frustrierend?
 - [x] **Block 5 – Gürtel und Twist:** Karte, Stationen, Netz-Solidarität, Logs. *Ergebnis:* Netz wächst, Twist sitzt. *Abbruchpunkt:* trägt der Twist ohne Erklärtext?
-- [ ] **Block 6 – Ende:** Konzernschiff, Ratsentscheid, beide Enden, Steuerelemente abgeben, Schlussbild.
+- [x] **Block 6 – Ende:** Konzernschiff, Ratsentscheid, beide Enden, Steuerelemente abgeben, Schlussbild.
 
 Start mit Block 1.

@@ -212,6 +212,20 @@ export const CONFIG = {
     },
   },
 
+  ende: {
+    // Das Konzernschiff kommt, wenn das Netz so viel abwirft
+    // und die Liste entschlüsselt ist.
+    abNetzErtrag: 130,
+    // Abstand zwischen den Zeilen der Schlussszene.
+    zeileMs: 5000,
+    // Nach der letzten Zeile bis zum Schlussbild.
+    schlussNachMs: 6000,
+    // Im Schlussbild: das Netz wächst weiter (S pro Tick),
+    // der Konzern verliert alle n ms eine Person.
+    netzSProTick: 0.0004,
+    konzernAbgangMs: 30000,
+  },
+
   // Gegenprobe: Konzernstation Aurel, gleiche Formeln, Doppelschicht,
   // keine Einrichtungen, keine Ankünfte. Läuft ab Spielstart, sichtbar ab Phase 5.
   konzern: {

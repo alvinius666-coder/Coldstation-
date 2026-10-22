@@ -150,6 +150,35 @@ export const NACH_DER_LISTE = [
   'Niemand sagt etwas. Dann geht die Arbeit weiter.',
 ];
 
+// Die Schlussszene. Eine Zeile nach der anderen; Funktionen bekommen den Spielstand.
+export const ENDE_SZENE = [
+  'Auf dem Schirm: ein Schiff mit Konzernkennung. Es geht in den Orbit.',
+  'An Bord: Rechtstitel für jede Station im Gürtel. Und Söldner.',
+  'Der Konzern, über Funk: „Die Anlagen sind Eigentum der Gesellschaft. Betrieb ohne Auftrag ist Diebstahl.“',
+  'Der Konzern: „Wir bieten die Rückkehr zum Schichtsystem. Lohn, Ordnung, Sicherheit. Übergabe binnen eines Tages.“',
+  'Der Rat tritt zusammen. Du wirst nicht gefragt.',
+  'Die Sanitäterin: „Eure Ordnung hatte sechs Betten und eine Liste.“',
+  'Die alte Schweißerin: „Die Anlagen haben wir gebaut. Zweimal.“',
+  (s) => `Der Rat stimmt ab: ${s.kolonie.leute} gegen die Übergabe, keiner dafür. Abgelehnt.`,
+  'Der Funker antwortet dem Schiff mit einem Wort: „Nein.“',
+  'Das Schiff bleibt im Orbit. Es wartet.',
+  'Über Funk fragt einer der Söldner leise, ob es bei uns Arbeit gibt.',
+  'Die alte Schweißerin, zu dir: „Und du, SL-07? Gehst du, oder bleibst du?“',
+];
+
+export const GEHEN = 'Der Schichtleiter nimmt die Kapsel. Niemand hält ihn auf. Die Station arbeitet weiter.';
+
+// Bleiben: Steuerelemente in dieser Reihenfolge abgeben. Knopftext, dann Logzeile.
+export const UEBERGABE = {
+  reaktor: ['Reaktor abgeben', 'Den Reaktor übernimmt die Technikerin.'],
+  schrott: ['Ausschlachten abgeben', 'Ausschlachten macht jetzt der Junge. Er ist schneller.'],
+  jobs: ['Jobverteilung abgeben', 'Wer wo arbeitet, klärt jetzt der Rat. Es geht schneller als gedacht.'],
+  schicht: ['Schicht abgeben', 'Die Schicht legt der Rat fest. Sie bleibt kurz.'],
+  bauen: ['Bauen abgeben', 'Was gebaut wird, beschließt der Rat.'],
+  lieferung: ['Lieferungen abgeben', 'Der Schlepper fährt, wenn jemand ruft. Dazu braucht es dich nicht.'],
+  funk: ['Funkpult abgeben', 'Du stehst vom Funkpult auf und setzt dich zu den anderen an den Tisch.'],
+};
+
 // Streitgespräche im Rat: zwei Stimmen, je eine Zeile. Nach Anlass sortiert.
 // Statt der zwei Zeilen geht auch { zeilen, wenn }: nur, solange wenn(s) gilt.
 const DEBATTEN = {
@@ -295,6 +324,14 @@ export function pruefeAusloeser(s) {
   if (s.phase === 4 && bauten.schlepper) {
     s.phase = 5;
     guertelOeffnen(s);
+  }
+
+  // Phase 6: das Ende. Erst nach der Liste.
+  if (s.phase === 5 && s.guertel.memos >= MEMOS.length && s.guertel.netzErtrag >= CONFIG.ende.abNetzErtrag) {
+    s.phase = 6;
+    s.ende.aktiv = true;
+    s.rat.vorschlag = null; // die Szene unterbricht alles andere
+    s.ende.naechsteZeile = s.zeit.spielMs;
   }
 
   if (!frei.schule && bauten.kantine && bauten.krankenstation) {

@@ -2,11 +2,17 @@
 
 import { CONFIG } from './config.js';
 import { log, debatte, EINRICHTUNG_NAME } from './events.js';
+import { abgegeben } from './ende.js';
 import { bauStarten, kojeDirekt, quoteDirekt, bezahlbar, einrichtungKosten, kojeKosten } from './actions.js';
+
+// Während der Schlussszene, bis zur Wahl, ruht der Rat.
+function szeneLaeuft(s) {
+  return s.ende.aktiv && !s.ende.wahl;
+}
 
 // Einen Vorschlag einbringen. Es läuft immer nur einer.
 export function vorschlagen(s, v) {
-  if (s.rat.vorschlag) return false;
+  if (s.rat.vorschlag || szeneLaeuft(s)) return false;
   s.rat.vorschlag = { ...v, bis: s.zeit.spielMs + CONFIG.rat.beratungMs };
   log(s, `Vorschlag: ${v.text}. Der Rat berät.`);
   debatte(s, v.thema);
@@ -73,17 +79,18 @@ function besetzen(s, job, n) {
 
 function eigenerBau(s) {
   const R = CONFIG.rat;
-  if (s.bau || s.rat.vorschlag || s.zeit.spielMs < s.rat.naechsterBau) return;
+  if (s.bau || s.rat.vorschlag || szeneLaeuft(s) || s.zeit.spielMs < s.rat.naechsterBau) return;
   s.rat.naechsterBau = s.zeit.spielMs + R.bauIntervallMs;
   const key = Object.keys(CONFIG.einrichtungen).find(
     (k) =>
-      CONFIG.einrichtungen[k].nurRat &&
+      (CONFIG.einrichtungen[k].nurRat || (abgegeben(s, 'bauen') && s.frei[k])) &&
       s.phase >= (CONFIG.einrichtungen[k].abPhase ?? 0) &&
       !s.bauten[k] &&
       bezahlbar(s, einrichtungKosten(k)),
   );
   if (!key) return;
-  log(s, `Der Rat beschließt: ${EINRICHTUNG_NAME[key]}. Du wurdest nicht gefragt.`);
+  const name = EINRICHTUNG_NAME[key];
+  log(s, s.ende.wahl ? `Der Rat beschließt: ${name}.` : `Der Rat beschließt: ${name}. Du wurdest nicht gefragt.`);
   bauStarten(s, key, true);
 }
 
@@ -110,7 +117,7 @@ export function ratTick(s) {
 
   eigenerBau(s);
 
-  if (jetzt >= s.rat.naechsteDebatte && !s.rat.vorschlag) {
+  if (jetzt >= s.rat.naechsteDebatte && !s.rat.vorschlag && !s.ende.aktiv) {
     s.rat.naechsteDebatte = jetzt + R.debatteIntervallMs;
     debatte(s, 'allgemein');
   }

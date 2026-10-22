@@ -3,6 +3,7 @@
 import { CONFIG } from './config.js';
 import { ratTick } from './rat.js';
 import { guertelTick, konzernTick, netzSolidaritaet } from './guertel.js';
+import { endeTick } from './ende.js';
 import {
   kabineGeaendert,
   tanksStehen,
@@ -121,7 +122,7 @@ function erschoepfung(s) {
   const last = k.quote + (s.mangel.hunger ? C.mangelLast : 0) + (s.mangel.kaelte ? C.mangelLast : 0);
   k.erschoepfung = klemmen(k.erschoepfung + C.k * (last - R), 0, 1);
   k.regeneration = R;
-  k.solidaritaet = einrichtungsSumme(s, 'S') + s.rat.solidaritaet + netzSolidaritaet(s);
+  k.solidaritaet = einrichtungsSumme(s, 'S') + s.rat.solidaritaet + netzSolidaritaet(s) + s.ende.sZuwachs;
 
   const E = k.erschoepfung;
   const U = CONFIG.unfall;
@@ -250,6 +251,7 @@ export function tick(s) {
   ankuenfte(s);
   if (besetzt(s, 'kantine')) s.kantineMs += CONFIG.tickMs;
   konzernTick(s);
+  endeTick(s);
   guertelTick(s);
 
   s.zeit.ticks++;
