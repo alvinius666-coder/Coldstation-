@@ -24,6 +24,9 @@ export function neuerSpielstand() {
       ruheraum: false,
       gewaechshaus: false,
       versammlung: false,
+      schlepper: false,
+      bergbaulaser: false,
+      schrottlager: false,
     },
     verletzte: [], // { job, bis }
     frei: {
@@ -37,6 +40,7 @@ export function neuerSpielstand() {
       kantine: false,
       krankenstation: false,
       schule: false,
+      schlepper: false,
     },
     kantineMs: 0, // wie lange die Kantine schon besetzt ist
     rat: {
@@ -59,8 +63,20 @@ export function neuerSpielstand() {
     gesehen: {}, // einmalige Ereignisse
     log: [],
     logNr: 0,
+    // Der Gürtel (Phase 5): Stationen, Netz, entschlüsselte Memos.
+    guertel: {
+      aktiv: false,
+      stationen: Object.fromEntries(
+        Object.entries(CONFIG.guertel.stationen).map(([key, st]) => [key, { status: st.start, hilfe: 0 }]),
+      ),
+      netzErtrag: 0,
+      memos: 0, // so viele sind entschlüsselt
+      naechstesMemo: 0,
+      naechsteRatLieferung: 0,
+      schlepperZurueck: 0, // Spielzeit, ab der der Schlepper wieder da ist
+    },
     // Gegenprobe, sichtbar ab Phase 5.
-    konzern: { ertrag: 0 },
+    konzern: { leute: CONFIG.konzern.leute, quote: CONFIG.konzern.quote, erschoepfung: 0, ertrag: 0 },
     // Haken für Teil 2.
     teil2: {
       miliz: 0,

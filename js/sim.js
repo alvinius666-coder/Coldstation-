@@ -7,6 +7,7 @@ import { CONFIG } from './config.js';
 import { neuerSpielstand } from './state.js';
 import { tick, kojen, leistung } from './tick.js';
 import * as A from './actions.js';
+import { liefern } from './guertel.js';
 
 // Zielwerte aus CLAUDE.md (Ertrag pro Tick).
 export const ZIELE = {
@@ -61,9 +62,13 @@ const STRATEGIEN = {
     for (const [key, e] of Object.entries(CONFIG.einrichtungen)) {
       if (e.nurRat) continue;
       A.einrichtungBauen(s, key);
-      if (s.bauten[key] && s.jobs[key] === 0) frei(s, 1);
-      if (s.bauten[key]) A.jobAendern(s, key, 1);
+      if (e.personal > 0 && s.bauten[key] && s.jobs[key] === 0) {
+        frei(s, 1);
+        A.jobAendern(s, key, 1);
+      }
     }
+    // Abgeben statt horten: liefern, was geht.
+    for (const key of Object.keys(s.guertel.stationen)) liefern(s, key);
     // Drei Leute auf die Baustelle.
     if (s.bau && s.jobs.bau < 3) {
       frei(s, 3 - s.jobs.bau);
@@ -94,14 +99,16 @@ export function simuliere(name, minuten = 60, seed = 1) {
       strategie(s);
       verteilen(s);
       tick(s);
-      // Ertrag als Minutenmittel, damit Zufall nicht stört.
-      summe += s.ertrag;
+      // Ertrag als Minutenmittel, damit Zufall nicht stört. Ab Phase 5 zählt das Netz.
+      summe += s.guertel.aktiv ? s.guertel.netzErtrag : s.ertrag;
       if ((sek + 1) % 60 === 0) {
         verlauf.push({
           min: (sek + 1) / 60,
           ertrag: summe / 60,
           leute: s.kolonie.leute,
           E: s.kolonie.erschoepfung,
+          konzern: s.konzern.ertrag,
+          netz: s.guertel.aktiv ? 1 + Object.values(s.guertel.stationen).filter((x) => x.status !== 'streik' && x.status !== 'konzern').length : 1,
           S: s.kolonie.solidaritaet,
           R: s.kolonie.regeneration,
         });
@@ -118,7 +125,7 @@ export function bericht(minuten = 60, seed = 1) {
   const boss = simuliere('boss', minuten, seed);
   const koll = simuliere('kollektiv', minuten, seed);
   const r = (x) => x.toFixed(1).padStart(6);
-  const zeilen = ['min    Boss   Ziel   Koll   Ziel   A(B) A(K)  E(B)  E(K)  S(K)'];
+  const zeilen = ['min    Boss   Ziel   Koll   Ziel   A(B) A(K)  E(B)  E(K)  S(K) Netz  Konzern'];
   for (let i = 0; i < boss.length; i++) {
     const b = boss[i];
     const k = koll[i];
@@ -134,7 +141,9 @@ export function bericht(minuten = 60, seed = 1) {
         String(k.leute).padStart(5) +
         b.E.toFixed(2).padStart(6) +
         k.E.toFixed(2).padStart(6) +
-        k.S.toFixed(2).padStart(6),
+        k.S.toFixed(2).padStart(6) +
+        String(k.netz).padStart(5) +
+        r(k.konzern),
     );
   }
   const kipp = koll.find((k, i) => k.min >= 5 && k.ertrag > boss[i].ertrag);

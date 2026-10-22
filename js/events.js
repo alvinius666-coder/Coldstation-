@@ -2,6 +2,7 @@
 // Eine Zeile pro Ereignis, karger Ton.
 
 import { CONFIG } from './config.js';
+import { guertelOeffnen } from './guertel.js';
 
 export const KABINE = ['eiskalt', 'kalt', 'kühl', 'warm'];
 
@@ -101,6 +102,9 @@ const EINGERICHTET = {
   ruheraum: 'Der Ruheraum ist dunkel und still. Er ist nie leer.',
   gewaechshaus: 'Im Gewächshaus wachsen Algen auf Draht. Jemand hat Tomaten dazugesetzt.',
   versammlung: 'Die Versammlungshalle hat keine Bühne. Die Stühle stehen im Kreis.',
+  schlepper: 'Der Schlepper hustet, dann zieht er. Der Gürtel ist wieder erreichbar.',
+  bergbaulaser: 'Der Bergbaulaser schneidet wieder. Er war für Erz gedacht.',
+  schrottlager: 'Das Schrottlager ist sortiert. Platten, Träger, Rohre. Man könnte alles daraus bauen.',
 };
 
 export const EINRICHTUNG_NAME = {
@@ -110,7 +114,41 @@ export const EINRICHTUNG_NAME = {
   ruheraum: 'Ruheraum',
   gewaechshaus: 'Gewächshaus',
   versammlung: 'Versammlungshalle',
+  schlepper: 'Schlepper',
+  bergbaulaser: 'Bergbaulaser',
+  schrottlager: 'Schrottlager',
 };
+
+// Funksprüche aus dem Gürtel. Bei Kontakt, bei Streikbeginn, bei Befreiung.
+export const FUNK = {
+  hesper: ['Funk aus Hesper: „Wir machen das seit einem Jahr so. Willkommen.“'],
+  vela: [
+    'Funk aus Vela: „Sie haben die Quote auf 160 gesetzt und die Krankenstation geschlossen.“',
+    'Funk aus Vela: „Also haben wir die Bohrer abgestellt. Aber wir haben nichts zu essen.“',
+  ],
+  tamm: [
+    'Funk aus Tamm: „Zwei Tote im Eisschacht. Die Antwort war eine Prämie für die anderen.“',
+    'Funk aus Tamm: „Die Prämie hat keiner abgeholt.“',
+  ],
+  okkar: ['Funk aus Okkar, leise: „An den Schleusen stehen Söldner. Bezahlt hat man die auch nicht.“'],
+};
+
+export const OKKAR_STREIK = 'In Okkar legen sie die Arbeit nieder. Die Söldner sehen zu.';
+
+// Entschlüsselte Konzernmemos aus dem Datenkern des Schleppers, in dieser Reihenfolge.
+export const MEMOS = [
+  'Memo, Abt. Gürtel: „Kalte Station: Förderquote 140 %. Ausfälle 9 %. Im Rahmen.“',
+  'Memo, Personal: „Arbeitskräfte werden als Betriebsmittel geführt. Abschreibung über vier Jahre.“',
+  'Memo, Sicherheit: „Sold für den Dienst in Okkar wird ins nächste Quartal verschoben.“',
+  'Memo, Abt. Gürtel: „Kalte Station unrentabel. Räumung. Das Shuttle fasst 40.“',
+  'Memo, Räumung: „Auswahl durch die Schichtleitung nach Produktivität. Liste anbei.“',
+  'Memo, Räumung: „Liste erhalten. Gezeichnet: SL-07.“',
+];
+// Nach dem letzten Memo. Keine Erklärung.
+export const NACH_DER_LISTE = [
+  'Die alte Schweißerin legt den Ausdruck vor dich auf den Tisch.',
+  'Niemand sagt etwas. Dann geht die Arbeit weiter.',
+];
 
 // Streitgespräche im Rat: zwei Stimmen, je eine Zeile. Nach Anlass sortiert.
 const DEBATTEN = {
@@ -229,6 +267,16 @@ export function pruefeAusloeser(s) {
     s.rat.naechsteDebatte = s.zeit.spielMs + CONFIG.rat.debatteIntervallMs / 3;
     log(s, 'Nach dem Essen bleiben alle sitzen.');
     log(s, 'Die alte Schweißerin: „Ab jetzt reden wir mit. Über alles.“');
+  }
+
+  // Phase 5: der Gürtel. Erst der Schlepper, dann der Kontakt.
+  if (s.phase === 4 && !frei.schlepper && s.zeit.spielMs >= CONFIG.schlepperAbMs) {
+    frei.schlepper = true;
+    log(s, 'Die Technikerin: „Der Schlepper im Hangar. Jetzt hätten wir das Material.“');
+  }
+  if (s.phase === 4 && bauten.schlepper) {
+    s.phase = 5;
+    guertelOeffnen(s);
   }
 
   if (!frei.schule && bauten.kantine && bauten.krankenstation) {

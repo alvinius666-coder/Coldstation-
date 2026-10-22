@@ -14,6 +14,10 @@
       <span class="label">Ertrag</span>
       <span id="ertrag-wert">0</span>
       <span class="label">pro Tick</span>
+      <span id="netz-zahlen" hidden>
+        <span class="label">Netz</span> <span id="netz-wert" class="gross"></span>
+        <span class="label">Konzern</span> <span id="konzern-wert" class="gross"></span>
+      </span>
     </section>
 
     <div id="spalten">
@@ -40,6 +44,16 @@
           <div id="rat-letztes" class="leise" hidden></div>
           <div id="rat-bau" hidden></div>
           <div id="rat-gebaut" class="leise" hidden></div>
+        </section>
+        <section id="guertel" hidden>
+          <h2>Gürtel</h2>
+          <div id="schlepper-status" class="leise"></div>
+          <div id="stationen"></div>
+          <div id="liefer-kosten" class="leise"></div>
+        </section>
+        <section id="archiv" hidden>
+          <h2>Datenkern</h2>
+          <ol id="memo-liste"></ol>
         </section>
       </div>
       <ul id="log"></ul>

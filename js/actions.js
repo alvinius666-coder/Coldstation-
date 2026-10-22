@@ -41,7 +41,9 @@ export function reaktorAnwerfen(s) {
   if (!bereit(s, 'reaktor')) return;
   s.res.energie = Math.min(CONFIG.energie.max, s.res.energie + CONFIG.reaktor.klickEnergie);
   starteCooldown(s, 'reaktor');
-  einmal(s, 'ersterFunke', 'Der Reaktor hustet. Licht flackert.');
+  if (einmal(s, 'ersterFunke', 'Der Reaktor hustet. Licht flackert.')) {
+    log(s, 'Auf der Brusttasche deines Overalls steht: SL-07.');
+  }
   pruefeAusloeser(s);
 }
 

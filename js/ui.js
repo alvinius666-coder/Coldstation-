@@ -1,7 +1,8 @@
 // Oberfläche. Elemente erscheinen erst, wenn sie freigeschaltet sind.
 
 import { CONFIG } from './config.js';
-import { KABINE, EINRICHTUNG_NAME } from './events.js';
+import { KABINE, EINRICHTUNG_NAME, MEMOS } from './events.js';
+import { liefern, kannLiefern, lieferKosten, schlepperDa } from './guertel.js';
 import * as A from './actions.js';
 import { kojen } from './tick.js';
 
@@ -144,6 +145,10 @@ function zeige(el, an) {
 let knoepfe = [];
 let zeilen = [];
 let jobZeilen = [];
+let stationZeilen = [];
+let letzteMemos = -1;
+
+const STATUS = { kollektiv: 'kollektiv', netz: 'im Netz', streik: 'im Streik', konzern: 'Konzernsicherheit' };
 let letzteLogNr = -1;
 
 export function initUI(holeSpiel) {
@@ -193,6 +198,19 @@ export function initUI(holeSpiel) {
     return { job, el, minus, plus, n: el.querySelector('.n') };
   });
 
+  stationZeilen = Object.entries(CONFIG.guertel.stationen).map(([key, def]) => {
+    const el = document.createElement('div');
+    el.className = 'station';
+    el.innerHTML = `<span>${def.name}</span><span class="status"></span><button>Lieferung schicken</button>`;
+    const knopf = el.querySelector('button');
+    knopf.addEventListener('click', () => {
+      liefern(holeSpiel(), key);
+      render(holeSpiel());
+    });
+    $('stationen').appendChild(el);
+    return { key, def, status: el.querySelector('.status'), knopf };
+  });
+
   const regler = $('quote');
   regler.min = CONFIG.quote.min;
   regler.max = CONFIG.quote.max;
@@ -226,6 +244,10 @@ export function zuruecksetzen() {
   $('leute').hidden = true;
   $('schicht').hidden = true;
   $('rat').hidden = true;
+  $('guertel').hidden = true;
+  $('archiv').hidden = true;
+  $('netz-zahlen').hidden = true;
+  letzteMemos = -1;
 }
 
 export function render(s) {
@@ -288,6 +310,11 @@ export function render(s) {
   zeige($('rat'), s.rat.aktiv);
   if (s.rat.aktiv) renderRat(s);
 
+  zeige($('guertel'), s.guertel.aktiv);
+  zeige($('netz-zahlen'), s.guertel.aktiv);
+  if (s.guertel.aktiv) renderGuertel(s);
+  zeige($('archiv'), s.guertel.memos > 0);
+
   zeige($('ertrag'), s.frei.ertrag);
   $('ertrag-wert').textContent = zahl(s.ertrag, 1);
 
@@ -299,6 +326,32 @@ export function render(s) {
         const li = document.createElement('li');
         li.textContent = eintrag.text;
         li.style.opacity = Math.max(0.15, 1 - i * 0.07);
+        return li;
+      }),
+    );
+  }
+}
+
+function renderGuertel(s) {
+  $('netz-wert').textContent = zahl(s.guertel.netzErtrag, 1);
+  $('konzern-wert').textContent = `${CONFIG.konzern.name} ${zahl(s.konzern.ertrag, 1)}`;
+  const rest = Math.ceil((s.guertel.schlepperZurueck - s.zeit.spielMs) / 1000);
+  $('schlepper-status').textContent = schlepperDa(s) ? 'Der Schlepper liegt im Hangar.' : `Der Schlepper ist unterwegs, noch ${rest} s.`;
+  $('liefer-kosten').textContent = `Eine Lieferung: ${kostenText(lieferKosten())}`;
+  for (const z of stationZeilen) {
+    const st = s.guertel.stationen[z.key];
+    const hilfe = st.status === 'streik' ? `, ${st.hilfe} / ${z.def.bedarf} Lieferungen` : '';
+    z.status.textContent = STATUS[st.status] + hilfe;
+    z.status.classList.toggle('netz', st.status === 'netz' || st.status === 'kollektiv');
+    z.knopf.hidden = st.status !== 'streik';
+    z.knopf.disabled = !kannLiefern(s);
+  }
+  if (s.guertel.memos !== letzteMemos) {
+    letzteMemos = s.guertel.memos;
+    $('memo-liste').replaceChildren(
+      ...MEMOS.slice(0, s.guertel.memos).map((text) => {
+        const li = document.createElement('li');
+        li.textContent = text;
         return li;
       }),
     );
@@ -331,6 +384,7 @@ export function renderDebug(s, tempo) {
     `A ${zahl(k.leute)}  q ${zahl(k.quote, 2)}`,
     `E ${zahl(k.erschoepfung, 2)}  S ${zahl(k.solidaritaet, 2)}  R ${zahl(k.regeneration, 2)}`,
     `S Rat ${zahl(s.rat.solidaritaet, 2)}  Sitzungen ${s.rat.sitzungen}`,
+    `Konzern A ${s.konzern.leute}  E ${zahl(s.konzern.erschoepfung, 2)}  Ertrag ${zahl(s.konzern.ertrag, 1)}`,
     `Ertrag ${zahl(s.ertrag, 2)}`,
     `Energie ${zahl(s.res.energie, 2)}`,
   ].join('\n');

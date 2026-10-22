@@ -37,6 +37,10 @@ body {
   margin-bottom: 24px;
 }
 #ertrag .label { color: var(--dim); }
+#ertrag { flex-wrap: wrap; }
+#netz-zahlen { display: flex; align-items: baseline; gap: 12px; margin-left: 24px; }
+#ertrag .gross { font-size: 1.6em; color: var(--akzent); font-variant-numeric: tabular-nums; }
+#konzern-wert.gross { color: var(--dim); }
 #ertrag-wert {
   font-size: 2.4em;
   color: var(--akzent);
@@ -126,6 +130,14 @@ h2 {
 #rat h2 { margin-bottom: 2px; }
 .leise { color: var(--dim); }
 #quote:disabled { opacity: 0.4; }
+#guertel, #archiv { display: flex; flex-direction: column; gap: 4px; }
+.station { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; margin-bottom: 6px; }
+.station .status { color: var(--dim); text-align: right; }
+.station .status.netz { color: var(--fg); }
+.station button { grid-column: 1 / -1; text-align: left; padding: 2px 8px; }
+#memo-liste { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: 6px; }
+#memo-liste li { color: var(--dim); }
+#memo-liste li:last-child { color: var(--fg); }
 #debug-sim { margin: 6px 0 0; max-height: 50vh; overflow: auto; }
 #mitte h2 label { cursor: inherit; }
 

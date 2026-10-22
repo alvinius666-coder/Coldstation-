@@ -162,6 +162,63 @@ export const CONFIG = {
       produktion: { algen: 2 },
     },
     versammlung: { kosten: { schrott: 1500, algen: 300 }, arbeit: 1000, personal: 0, nurRat: true, S: 0.15 },
+    // Industrie: macht den Gürtel erreichbar (Phase 5). Haken für Teil 2.
+    schlepper: { kosten: { schrott: 1500, algen: 200 }, arbeit: 600, personal: 0, industrie: true },
+    // Baut der Rat ab Phase 5. Ebenfalls Industrie für Teil 2.
+    bergbaulaser: {
+      kosten: { schrott: 1200, algen: 100 },
+      arbeit: 600,
+      personal: 0,
+      nurRat: true,
+      industrie: true,
+      abPhase: 5,
+      produktion: { schrott: 4 },
+    },
+    schrottlager: {
+      kosten: { schrott: 800 },
+      arbeit: 400,
+      personal: 0,
+      nurRat: true,
+      industrie: true,
+      abPhase: 5,
+    },
+  },
+
+  // Ab dieser Spielzeit (in Phase 4) lässt sich der Schlepper flicken.
+  schlepperAbMs: 32 * 60 * 1000,
+
+  guertel: {
+    // Jede Station im Netz hebt S überall um so viel.
+    sProStation: 0.06,
+    // Eine Fahrt des Schleppers dauert so lange; unterwegs liefert er nichts.
+    fahrtMs: 60000,
+    // Eine Lieferung: kostet das hier und bringt eine Einheit Hilfe.
+    lieferung: { algen: 200, schrott: 400 },
+    // Der Rat schickt selbst, wenn die Vorräte darüber liegen, im Abstand.
+    ratLiefertAb: { algen: 500, schrott: 1200 },
+    ratLieferIntervallMs: 40000,
+    // Abstand zwischen zwei entschlüsselten Memos.
+    memoIntervallMs: 120000,
+    // So viele Leute verliert die Konzernstation pro befreiter Station.
+    konzernVerlustProStation: 4,
+    // ertrag: Ertrag der Station im Netz bei S = 0 (wird mit 1 + S multipliziert).
+    // bedarf: Lieferungen bis zur Befreiung.
+    // streikAbBefreit: unter Konzernsicherheit, bis so viele Stationen frei sind.
+    stationen: {
+      hesper: { name: 'Hesper', start: 'kollektiv', ertrag: 5 },
+      vela: { name: 'Vela', start: 'streik', bedarf: 3, ertrag: 4 },
+      tamm: { name: 'Tamm', start: 'streik', bedarf: 4, ertrag: 3 },
+      okkar: { name: 'Okkar', start: 'konzern', bedarf: 5, ertrag: 5, streikAbBefreit: 2 },
+    },
+  },
+
+  // Gegenprobe: Konzernstation Aurel, gleiche Formeln, Doppelschicht,
+  // keine Einrichtungen, keine Ankünfte. Läuft ab Spielstart, sichtbar ab Phase 5.
+  konzern: {
+    name: 'Aurel',
+    leute: 40,
+    quote: 1.5,
+    abgangRate: 0.03,
   },
 
   rat: {

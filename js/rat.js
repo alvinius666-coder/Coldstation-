@@ -76,7 +76,11 @@ function eigenerBau(s) {
   if (s.bau || s.rat.vorschlag || s.zeit.spielMs < s.rat.naechsterBau) return;
   s.rat.naechsterBau = s.zeit.spielMs + R.bauIntervallMs;
   const key = Object.keys(CONFIG.einrichtungen).find(
-    (k) => CONFIG.einrichtungen[k].nurRat && !s.bauten[k] && bezahlbar(s, einrichtungKosten(k)),
+    (k) =>
+      CONFIG.einrichtungen[k].nurRat &&
+      s.phase >= (CONFIG.einrichtungen[k].abPhase ?? 0) &&
+      !s.bauten[k] &&
+      bezahlbar(s, einrichtungKosten(k)),
   );
   if (!key) return;
   log(s, `Der Rat beschließt: ${EINRICHTUNG_NAME[key]}. Du wurdest nicht gefragt.`);
