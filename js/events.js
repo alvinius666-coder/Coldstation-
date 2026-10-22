@@ -151,6 +151,7 @@ export const NACH_DER_LISTE = [
 ];
 
 // Streitgespräche im Rat: zwei Stimmen, je eine Zeile. Nach Anlass sortiert.
+// Statt der zwei Zeilen geht auch { zeilen, wenn }: nur, solange wenn(s) gilt.
 const DEBATTEN = {
   quoteHoch: [
     ['Der Lader: „Mehr Schicht, mehr Erz. Wir brauchen Reserven.“', 'Die Sanitäterin: „Ich habe sechs Betten. Die waren schon mal voll.“'],
@@ -168,19 +169,36 @@ const DEBATTEN = {
   ],
   allgemein: [
     ['Der Bohrhauer: „Wozu ein Rat? Früher gab es den Schichtleiter.“', 'Die alte Schweißerin: „Ja. Früher.“'],
-    ['Der Funker: „Andere Stationen funken auch. Wir könnten teilen.“', 'Der Lader: „Teilen? Wir haben selbst kaum genug.“'],
-    ['Die Technikerin: „Im Hangar steht der alte Schlepper. Den könnte man flicken.“', 'Der Koch: „Und dann? Abhauen?“'],
+    {
+      zeilen: ['Der Funker: „Andere Stationen funken auch. Wir könnten teilen.“', 'Der Lader: „Teilen? Wir haben selbst kaum genug.“'],
+      wenn: (s) => !s.guertel.aktiv,
+    },
+    {
+      zeilen: ['Die Technikerin: „Im Hangar steht der alte Schlepper. Den könnte man flicken.“', 'Der Koch: „Und dann? Abhauen?“'],
+      wenn: (s) => !s.bauten.schlepper && !s.bau,
+    },
     ['Der Junge: „Wer entscheidet eigentlich, wer im Rat sitzt?“', 'Die Sanitäterin: „Alle. Du auch.“'],
     ['Die Frau aus Schacht 2: „Der Überschuss liegt im Lager. Wem gehört der?“', 'Der Funker: „Wem gehörte er vorher?“'],
+    {
+      zeilen: ['Der Lader: „Warum schicken wir alles weg?“', 'Die Frau aus Schacht 2: „Damit wir nicht wieder allein sind.“'],
+      wenn: (s) => s.guertel.aktiv,
+    },
+    {
+      zeilen: ['Der Bohrhauer: „Und was machen wir mit ihm?“', 'Die alte Schweißerin: „Er arbeitet. Wie alle.“'],
+      wenn: (s) => s.guertel.memos >= MEMOS.length,
+    },
   ],
 };
 
 export function debatte(s, thema) {
   const liste = DEBATTEN[thema];
-  const offen = liste.map((_, i) => i).filter((i) => !s.gesehen[`debatte_${thema}_${i}`]);
-  const i = offen.length > 0 ? offen[Math.floor(Math.random() * offen.length)] : Math.floor(Math.random() * liste.length);
+  const passend = liste.map((_, i) => i).filter((i) => !liste[i].wenn || liste[i].wenn(s));
+  if (passend.length === 0) return;
+  const offen = passend.filter((i) => !s.gesehen[`debatte_${thema}_${i}`]);
+  const auswahl = offen.length > 0 ? offen : passend;
+  const i = auswahl[Math.floor(Math.random() * auswahl.length)];
   s.gesehen[`debatte_${thema}_${i}`] = true;
-  for (const zeile of liste[i]) log(s, zeile);
+  for (const zeile of liste[i].zeilen ?? liste[i]) log(s, zeile);
 }
 
 export function baubeginn(s, key) {
