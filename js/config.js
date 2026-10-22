@@ -205,7 +205,7 @@ export const CONFIG = {
     // bedarf: Lieferungen bis zur Befreiung.
     // streikAbBefreit: unter Konzernsicherheit, bis so viele Stationen frei sind.
     stationen: {
-      hesper: { name: 'Hesper', start: 'kollektiv', ertrag: 5 },
+      zarja: { name: 'Zarja', start: 'kollektiv', ertrag: 5 },
       vela: { name: 'Vela', start: 'streik', bedarf: 3, ertrag: 4 },
       tamm: { name: 'Tamm', start: 'streik', bedarf: 4, ertrag: 3 },
       okkar: { name: 'Okkar', start: 'konzern', bedarf: 5, ertrag: 5, streikAbBefreit: 2 },

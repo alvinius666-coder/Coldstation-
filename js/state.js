@@ -55,6 +55,7 @@ export function neuerSpielstand() {
     notsignal: { gesendet: false, naechsteAnkunft: 0, ankuenfte: 0, kojenVoll: false },
     mangel: { hunger: false, kaelte: false },
     phase: 1,
+    stationsName: null, // erst die Kennung vom Typenschild, später der eigene Name
     kabine: 0, // Index der Temperaturstufe
     ertrag: 0, // Materialproduktion im letzten Tick
     raten: { energie: 0, schrott: 0, algen: 0 }, // Nettoänderung im letzten Tick
@@ -118,6 +119,18 @@ function migrieren(daten) {
     throw new Error('Kein Spielstand.');
   }
   const s = mischen(neuerSpielstand(), daten);
+  // Hesper heißt jetzt Zarja.
+  const st = s.guertel.stationen;
+  if (st.hesper) {
+    st.zarja = st.hesper;
+    delete st.hesper;
+  }
+  s.teil2.buendnisse = s.teil2.buendnisse.map((k) => (k === 'hesper' ? 'zarja' : k));
+  // Ältere Spielstände ohne Namen bekommen ihn nachträglich.
+  if (!s.stationsName) {
+    if (s.guertel.aktiv) s.stationsName = 'Iskra';
+    else if (s.notsignal.gesendet) s.stationsName = 'Förderstation 7';
+  }
   s.version = VERSION;
   return s;
 }

@@ -302,7 +302,7 @@ export function render(s) {
   const moeglich = naechsteAbgaben(s);
   for (const u of uebergabeKnoepfe) zeige(u.el, moeglich.includes(u.key));
 
-  $('ort-name').textContent = s.kolonie.leute > 0 ? 'Station' : 'Kabine';
+  $('ort-name').textContent = s.stationsName ?? (s.kolonie.leute > 0 ? 'Station' : 'Kabine');
   $('temp').textContent = KABINE[s.kabine];
 
   for (const k of knoepfe) {

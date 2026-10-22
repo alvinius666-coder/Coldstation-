@@ -81,6 +81,8 @@ export function guertelOeffnen(s) {
   s.teil2.buendnisse = Object.keys(g.stationen).filter((k) => befreit(g.stationen[k]));
   log(s, 'Im Schlepper liegt ein Datenkern der Konzernflotte. Der Funker macht sich daran.');
   for (const key of Object.keys(CONFIG.guertel.stationen)) funk(s, key);
+  // Beim Funkkontakt mit Zarja gibt der Rat der Station ihren eigenen Namen.
+  s.stationsName = 'Iskra';
   s.teil2.soeldnerGeruechte++;
 }
 

@@ -86,6 +86,8 @@ export function notsignalSenden(s) {
   s.notsignal.gesendet = true;
   s.notsignal.naechsteAnkunft = s.zeit.spielMs + CONFIG.leute.ersteAnkunftMs;
   s.phase = 2;
+  s.stationsName = 'Förderstation 7';
+  log(s, 'Das Funkpult sendet die Kennung vom Typenschild: Förderstation 7.');
   log(s, 'Das Signal geht raus. Rauschen.');
   pruefeAusloeser(s);
 }

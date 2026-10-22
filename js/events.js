@@ -68,7 +68,7 @@ export function startTexte(s) {
 }
 
 export function kabineGeaendert(s) {
-  const ort = s.kolonie.leute > 0 ? 'Die Station' : 'Die Kabine';
+  const ort = s.stationsName ?? (s.kolonie.leute > 0 ? 'Die Station' : 'Die Kabine');
   log(s, `${ort} ist ${KABINE[s.kabine]}.`);
 }
 
@@ -121,7 +121,12 @@ export const EINRICHTUNG_NAME = {
 
 // Funksprüche aus dem Gürtel. Bei Kontakt, bei Streikbeginn, bei Befreiung.
 export const FUNK = {
-  hesper: ['Funk aus Hesper: „Wir machen das seit einem Jahr so. Willkommen.“'],
+  zarja: [
+    'Funk aus Zarja: „Hier Zarja. Wer funkt da?“',
+    'Der Funker sieht in die Runde. Der Rat nickt.',
+    'Der Funker: „Hier Iskra.“',
+    'Funk aus Zarja: „Wir machen das seit einem Jahr so. Willkommen, Iskra.“',
+  ],
   vela: [
     'Funk aus Vela: „Sie haben die Quote auf 160 gesetzt und die Krankenstation geschlossen.“',
     'Funk aus Vela: „Also haben wir die Bohrer abgestellt. Aber wir haben nichts zu essen.“',
@@ -137,10 +142,10 @@ export const OKKAR_STREIK = 'In Okkar legen sie die Arbeit nieder. Die Söldner 
 
 // Entschlüsselte Konzernmemos aus dem Datenkern des Schleppers, in dieser Reihenfolge.
 export const MEMOS = [
-  'Memo, Abt. Gürtel: „Kalte Station: Förderquote 140 %. Ausfälle 9 %. Im Rahmen.“',
+  'Memo, Abt. Gürtel: „Förderstation 7: Förderquote 140 %. Ausfälle 9 %. Im Rahmen.“',
   'Memo, Personal: „Arbeitskräfte werden als Betriebsmittel geführt. Abschreibung über vier Jahre.“',
   'Memo, Sicherheit: „Sold für den Dienst in Okkar wird ins nächste Quartal verschoben.“',
-  'Memo, Abt. Gürtel: „Kalte Station unrentabel. Räumung. Das Shuttle fasst 40.“',
+  'Memo, Abt. Gürtel: „Förderstation 7 unrentabel. Räumung. Das Shuttle fasst 40.“',
   'Memo, Räumung: „Auswahl durch die Schichtleitung nach Produktivität. Liste anbei.“',
   'Memo, Räumung: „Liste erhalten. Gezeichnet: SL-07.“',
 ];
@@ -154,19 +159,19 @@ export const NACH_DER_LISTE = [
 export const ENDE_SZENE = [
   'Auf dem Schirm: ein Schiff mit Konzernkennung. Es geht in den Orbit.',
   'An Bord: Rechtstitel für jede Station im Gürtel. Und Söldner.',
-  'Der Konzern, über Funk: „Die Anlagen sind Eigentum der Gesellschaft. Betrieb ohne Auftrag ist Diebstahl.“',
+  'Der Konzern, über Funk: „An Förderstation 7: Die Anlagen sind Eigentum der Gesellschaft. Betrieb ohne Auftrag ist Diebstahl.“',
   'Der Konzern: „Wir bieten die Rückkehr zum Schichtsystem. Lohn, Ordnung, Sicherheit. Übergabe binnen eines Tages.“',
   'Der Rat tritt zusammen. Du wirst nicht gefragt.',
   'Die Sanitäterin: „Eure Ordnung hatte sechs Betten und eine Liste.“',
   'Die alte Schweißerin: „Die Anlagen haben wir gebaut. Zweimal.“',
   (s) => `Der Rat stimmt ab: ${s.kolonie.leute} gegen die Übergabe, keiner dafür. Abgelehnt.`,
-  'Der Funker antwortet dem Schiff mit einem Wort: „Nein.“',
+  'Der Funker antwortet dem Schiff: „Hier gibt es keine Förderstation 7. Hier ist Iskra.“ Dann: „Nein.“',
   'Das Schiff bleibt im Orbit. Es wartet.',
   'Über Funk fragt einer der Söldner leise, ob es bei uns Arbeit gibt.',
   'Die alte Schweißerin, zu dir: „Und du, SL-07? Gehst du, oder bleibst du?“',
 ];
 
-export const GEHEN = 'Der Schichtleiter nimmt die Kapsel. Niemand hält ihn auf. Die Station arbeitet weiter.';
+export const GEHEN = 'Der Schichtleiter nimmt die Kapsel. Niemand hält ihn auf. Iskra arbeitet weiter.';
 
 // Bleiben: Steuerelemente in dieser Reihenfolge abgeben. Knopftext, dann Logzeile.
 export const UEBERGABE = {
